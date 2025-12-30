@@ -7,6 +7,8 @@ import { HopListComponent } from './components/hop-list/hop-list.component';
 import { HopFormComponent } from './components/hop-form/hop-form.component';
 import { YeastListComponent } from './components/yeast-list/yeast-list.component';
 import { YeastFormComponent } from './components/yeast-form/yeast-form.component';
+import { MiscListComponent } from './components/misc-list/misc-list.component';
+import { MiscFormComponent } from './components/misc-form/misc-form.component';
 
 export const routes: Routes = [
   { path: '', component: InventoryTableComponent },
@@ -20,5 +22,8 @@ export const routes: Routes = [
   { path: 'hops/edit/:id', component: HopFormComponent },
   { path: 'yeasts', component: YeastListComponent },
   { path: 'yeasts/add', component: YeastFormComponent },
-  { path: 'yeasts/edit/:id', component: YeastFormComponent }
+  { path: 'yeasts/edit/:id', component: YeastFormComponent },
+  { path: 'miscs', component: MiscListComponent },
+  { path: 'miscs/add', component: MiscFormComponent },
+  { path: 'miscs/edit/:id', component: MiscFormComponent }
 ];

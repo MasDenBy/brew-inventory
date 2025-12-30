@@ -14,7 +14,7 @@ public static class MiscEndpoints
         group.MapGet("/", async (BrewInventoryContext db) =>
         {
             var items = await db.Miscs
-                .Select(m => new MiscResponse(m.Id, m.Name, m.Amount, m.BestBefore, m.BrewfatherId))
+                .Select(m => new MiscResponse(m.Id, m.Name, m.Amount, m.Unit, m.Type, m.BestBefore, m.BrewfatherId))
                 .ToListAsync();
             return Results.Ok(items);
         });
@@ -24,7 +24,7 @@ public static class MiscEndpoints
             var m = await db.Miscs.FindAsync(id);
             return m is null
                 ? Results.NotFound()
-                : Results.Ok(new MiscResponse(m.Id, m.Name, m.Amount, m.BestBefore, m.BrewfatherId));
+                : Results.Ok(new MiscResponse(m.Id, m.Name, m.Amount, m.Unit, m.Type, m.BestBefore, m.BrewfatherId));
         });
 
         group.MapPost("/", async (CreateMiscRequest req, BrewInventoryContext db) =>
@@ -33,6 +33,8 @@ public static class MiscEndpoints
             {
                 Name = req.Name,
                 Amount = req.Amount,
+                Unit = req.Unit,
+                Type = req.Type,
                 BestBefore = req.BestBefore,
                 BrewfatherId = req.BrewfatherId
             };
@@ -40,7 +42,7 @@ public static class MiscEndpoints
             db.Miscs.Add(entity);
             await db.SaveChangesAsync();
 
-            var resp = new MiscResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId);
+            var resp = new MiscResponse(entity.Id, entity.Name, entity.Amount, entity.Unit, entity.Type, entity.BestBefore, entity.BrewfatherId);
             return Results.Created($"/api/miscs/{entity.Id}", resp);
         });
 
@@ -51,6 +53,8 @@ public static class MiscEndpoints
 
             entity.Name = req.Name;
             entity.Amount = req.Amount;
+            entity.Unit = req.Unit;
+            entity.Type = req.Type;
             entity.BestBefore = req.BestBefore;
             entity.BrewfatherId = req.BrewfatherId;
 
