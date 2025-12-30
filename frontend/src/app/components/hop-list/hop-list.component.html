@@ -1,0 +1,71 @@
+<div class="inventory-header">
+  <div class="header-left">
+    <h2 class="page-title">Hops</h2>
+    <p class="page-subtitle">Manage your brewing hops inventory</p>
+  </div>
+  <button class="btn btn-primary btn-lg" (click)="addHop()">
+    <span>➕</span> Add New Hop
+  </button>
+</div>
+
+<div *ngIf="isLoading" class="loading">Loading hops...</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="!isLoading && !error" class="inventory-card">
+  <div class="table-wrapper">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Origin</th>
+          <th>Type</th>
+          <th>Alpha Acid (%)</th>
+          <th>Harvest Year</th>
+          <th>Amount (g)</th>
+          <th>Best Before</th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let hop of hops" class="table-row">
+          <td class="ingredient-name">
+            <div class="name-cell">
+              <span class="ingredient-icon">🌿</span>
+              <strong>{{ hop.name }}</strong>
+            </div>
+          </td>
+          <td class="supplier-cell">{{ hop.origin || '—' }}</td>
+          <td class="type-cell">
+            <span class="badge" [ngClass]="'badge-' + hop.type.toLowerCase()">{{ hop.type }}</span>
+          </td>
+          <td class="amount-cell">{{ hop.alphaAcid }}%</td>
+          <td class="amount-cell">{{ hop.harvestYear || '—' }}</td>
+          <td class="amount-cell">
+            <span class="amount-badge">{{ hop.amount }}</span>
+          </td>
+          <td class="date-cell">{{ hop.bestBefore || '—' }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn-icon btn-edit" (click)="editHop(hop.id)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteHop(hop.id)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="hops.length === 0" class="empty-state">
+      <div class="empty-icon">🌿</div>
+      <h3>No hops yet</h3>
+      <p>Start by adding your first hop to the inventory</p>
+      <button class="btn btn-primary" (click)="addHop()">
+        Add First Hop
+      </button>
+    </div>
+  </div>
+</div>

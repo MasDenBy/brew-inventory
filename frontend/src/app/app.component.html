@@ -1,0 +1,32 @@
+<div class="app-wrapper">
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo-icon">🍺</div>
+          <h1 class="app-title">Brewing Inventory</h1>
+        </div>
+        <nav class="header-nav">
+          <a routerLink="/fermentables" routerLinkActive="active" class="nav-link">Fermentables</a>
+          <a routerLink="/hops" routerLinkActive="active" class="nav-link">Hops</a>
+          <a routerLink="/yeasts" routerLinkActive="active" class="nav-link">Yeasts</a>
+          <a routerLink="/miscs" routerLinkActive="active" class="nav-link">Miscs</a>
+          <a href="#" class="nav-link">Recipes</a>
+          <a href="#" class="nav-link">Settings</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <main class="main-content">
+    <div class="container">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+  
+  <footer class="app-footer">
+    <div class="container">
+      <p>&copy; 2025 Brewing Inventory. Craft your perfect brew.</p>
+    </div>
+  </footer>
+</div>

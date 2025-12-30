@@ -1,0 +1,71 @@
+<div class="inventory-header">
+  <div class="header-left">
+    <h2 class="page-title">Fermentables</h2>
+    <p class="page-subtitle">Manage your malts, grains, and sugars</p>
+  </div>
+  <button class="btn btn-primary btn-lg" (click)="addFermentable()">
+    <span>➕</span> Add New Fermentable
+  </button>
+</div>
+
+<div *ngIf="isLoading" class="loading">Loading fermentables...</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="!isLoading && !error" class="inventory-card">
+  <div class="table-wrapper">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Supplier</th>
+          <th>Origin</th>
+          <th>Type</th>
+          <th>Color (EBC)</th>
+          <th>Amount (kg)</th>
+          <th>Best Before</th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let fermentable of fermentables" class="table-row">
+          <td class="ingredient-name">
+            <div class="name-cell">
+              <span class="ingredient-icon">🌾</span>
+              <strong>{{ fermentable.name }}</strong>
+            </div>
+          </td>
+          <td class="supplier-cell">{{ fermentable.supplier || '—' }}</td>
+          <td class="supplier-cell">{{ fermentable.origin || '—' }}</td>
+          <td class="type-cell">
+            <span class="badge" [ngClass]="'badge-' + fermentable.type.toLowerCase()">{{ fermentable.type }}</span>
+          </td>
+          <td class="amount-cell">{{ fermentable.color }}</td>
+          <td class="amount-cell">
+            <span class="amount-badge">{{ fermentable.amount }}</span>
+          </td>
+          <td class="date-cell">{{ fermentable.bestBefore || '—' }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn-icon btn-edit" (click)="editFermentable(fermentable.id)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteFermentable(fermentable.id)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="fermentables.length === 0" class="empty-state">
+      <div class="empty-icon">🌾</div>
+      <h3>No fermentables yet</h3>
+      <p>Start by adding your first fermentable to the inventory</p>
+      <button class="btn btn-primary" (click)="addFermentable()">
+        Add First Fermentable
+      </button>
+    </div>
+  </div>
+</div>

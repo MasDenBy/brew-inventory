@@ -417,3 +417,6 @@ FodyWeavers.xsd
 *.msm
 *.msp
 wwwroot
+/backend/BrewInventory.App/brewinventory.db
+/backend/BrewInventory.App/brewinventory.db-shm
+/backend/BrewInventory.App/brewinventory.db-wal

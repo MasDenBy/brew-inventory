@@ -1,0 +1,65 @@
+<div class="inventory-header">
+  <div class="header-left">
+    <h2 class="page-title">Miscs</h2>
+    <p class="page-subtitle">Manage your spices, herbs, and other ingredients</p>
+  </div>
+  <button class="btn btn-primary btn-lg" (click)="addMisc()">
+    <span>➕</span> Add New Misc
+  </button>
+</div>
+
+<div *ngIf="isLoading" class="loading">Loading miscs...</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="!isLoading && !error" class="inventory-card">
+  <div class="table-wrapper">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Best Before</th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let misc of miscs" class="table-row">
+          <td class="ingredient-name">
+            <div class="name-cell">
+              <span class="ingredient-icon">🌿</span>
+              <strong>{{ misc.name }}</strong>
+            </div>
+          </td>
+          <td class="type-cell">
+            <span class="badge" [ngClass]="'badge-' + misc.type.toString().toLowerCase()">{{ getTypeLabel(misc.type) }}</span>
+          </td>
+          <td class="amount-cell">
+            <span class="amount-badge">{{ misc.amount }} {{ getUnitLabel(misc.unit) }}</span>
+          </td>
+          <td class="date-cell">{{ misc.bestBefore || '—' }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn-icon btn-edit" (click)="editMisc(misc.id)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteMisc(misc.id)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="miscs.length === 0" class="empty-state">
+      <div class="empty-icon">🌿</div>
+      <h3>No miscs yet</h3>
+      <p>Start by adding your first misc ingredient to the inventory</p>
+      <button class="btn btn-primary" (click)="addMisc()">
+        Add First Misc
+      </button>
+    </div>
+  </div>
+</div>
