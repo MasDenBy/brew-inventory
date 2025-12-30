@@ -1,0 +1,71 @@
+<div class="inventory-header">
+  <div class="header-left">
+    <h2 class="page-title">Yeasts</h2>
+    <p class="page-subtitle">Manage your yeast strains</p>
+  </div>
+  <button class="btn btn-primary btn-lg" (click)="addYeast()">
+    <span>➕</span> Add New Yeast
+  </button>
+</div>
+
+<div *ngIf="isLoading" class="loading">Loading yeasts...</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="!isLoading && !error" class="inventory-card">
+  <div class="table-wrapper">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Laboratory</th>
+          <th>Type</th>
+          <th>Form</th>
+          <th>Amount</th>
+          <th>Best Before</th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let yeast of yeasts" class="table-row">
+          <td class="ingredient-name">
+            <div class="name-cell">
+              <span class="ingredient-icon">🧫</span>
+              <strong>{{ yeast.name }}</strong>
+            </div>
+          </td>
+          <td class="supplier-cell">{{ yeast.laboratory }}</td>
+          <td class="type-cell">
+            <span class="badge" [ngClass]="'badge-' + yeast.type.toLowerCase()">{{ yeast.type }}</span>
+          </td>
+          <td class="type-cell">
+            <span class="badge" [ngClass]="'badge-' + yeast.form.toLowerCase()">{{ yeast.form }}</span>
+          </td>
+          <td class="amount-cell">
+            <span class="amount-badge">{{ yeast.amount }}</span>
+          </td>
+          <td class="date-cell">{{ yeast.bestBefore || '—' }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn-icon btn-edit" (click)="editYeast(yeast.id)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteYeast(yeast.id)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="yeasts.length === 0" class="empty-state">
+      <div class="empty-icon">🧫</div>
+      <h3>No yeasts yet</h3>
+      <p>Start by adding your first yeast to the inventory</p>
+      <button class="btn btn-primary" (click)="addYeast()">
+        Add First Yeast
+      </button>
+    </div>
+  </div>
+</div>
