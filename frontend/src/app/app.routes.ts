@@ -7,6 +7,7 @@ import { YeastListComponent } from './components/yeast-list/yeast-list.component
 import { YeastFormComponent } from './components/yeast-form/yeast-form.component';
 import { MiscListComponent } from './components/misc-list/misc-list.component';
 import { MiscFormComponent } from './components/misc-form/misc-form.component';
+import { SyncComponent } from './components/sync/sync.component';
 
 export const routes: Routes = [
   { path: '', component: FermentableListComponent },
@@ -21,5 +22,6 @@ export const routes: Routes = [
   { path: 'yeasts/edit/:id', component: YeastFormComponent },
   { path: 'miscs', component: MiscListComponent },
   { path: 'miscs/add', component: MiscFormComponent },
-  { path: 'miscs/edit/:id', component: MiscFormComponent }
+  { path: 'miscs/edit/:id', component: MiscFormComponent },
+  { path: 'sync', component: SyncComponent }
 ];

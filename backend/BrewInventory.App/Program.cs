@@ -1,10 +1,18 @@
 using BrewInventory.App.Data;
 using BrewInventory.App.Endpoints;
+using BrewInventory.App.Models;
+using BrewInventory.App.Services;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<BrewInventoryContext>();
+
+builder.Services.Configure<BrewfatherSettings>(
+    builder.Configuration.GetSection("Brewfather"));
+
+builder.Services.AddHttpClient<IBrewfatherClient, BrewfatherClient>();
+builder.Services.AddScoped<IBrewfatherSyncService, BrewfatherSyncService>();
 
 builder.Services.AddCors(options =>
 {
@@ -56,5 +64,6 @@ app.MapFermentableEndpoints();
 app.MapHopEndpoints();
 app.MapYeastEndpoints();
 app.MapMiscEndpoints();
+app.MapSyncEndpoints();
 
 app.Run();

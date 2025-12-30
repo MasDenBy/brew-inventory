@@ -1,0 +1,80 @@
+<div class="sync-container">
+  <div class="sync-header">
+    <h1 class="page-title">
+      <span class="sync-icon">🔄</span>
+      Brewfather Sync
+    </h1>
+    <p class="page-subtitle">Synchronize your inventory with Brewfather</p>
+  </div>
+
+  <div class="sync-card">
+    <div class="sync-all-section">
+      <div class="sync-all-content">
+        <div class="sync-all-info">
+          <h2>Sync All Data</h2>
+          <p>Synchronize all inventory items from Brewfather in one click</p>
+        </div>
+        <button 
+          class="btn-primary btn-lg sync-all-btn" 
+          (click)="syncAll()"
+          [disabled]="isSyncingAll">
+          <span *ngIf="!isSyncingAll">🔄 Sync All</span>
+          <span *ngIf="isSyncingAll">⏳ Syncing...</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sync-items-section">
+      <h3>Individual Synchronization</h3>
+      <p class="section-subtitle">Sync specific categories individually</p>
+
+      <div class="sync-items-grid">
+        <div *ngFor="let item of syncItems" class="sync-item-card" [class.syncing]="item.status === 'syncing'">
+          <div class="sync-item-header">
+            <div class="sync-item-title">
+              <span class="item-icon">{{ item.icon }}</span>
+              <h4>{{ item.displayName }}</h4>
+            </div>
+            <span class="status-icon" *ngIf="item.status !== 'idle'">
+              {{ getStatusIcon(item.status) }}
+            </span>
+          </div>
+
+          <div class="sync-item-body">
+            <div class="sync-item-status" [ngClass]="'status-' + item.status" *ngIf="item.message">
+              {{ item.message }}
+            </div>
+
+            <button 
+              class="btn-outline btn-sm sync-item-btn" 
+              (click)="item.syncMethod()"
+              [disabled]="item.status === 'syncing' || isSyncingAll">
+              <span *ngIf="item.status !== 'syncing'">Sync {{ item.displayName }}</span>
+              <span *ngIf="item.status === 'syncing'">Syncing...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sync-info-card">
+    <div class="info-icon">ℹ️</div>
+    <div class="info-content">
+      <h4>About Synchronization</h4>
+      <ul>
+        <li><strong>Fermentables:</strong> Syncs all fermentable ingredients (grains, extracts, sugars)</li>
+        <li><strong>Hops:</strong> Syncs all hop varieties from Brewfather</li>
+        <li><strong>Yeasts:</strong> Syncs all yeast strains from Brewfather</li>
+        <li><strong>Miscs:</strong> Syncs miscellaneous ingredients from Brewfather</li>
+        <li><strong>Recipes:</strong> Coming soon - will sync all your recipes</li>
+      </ul>
+      <p class="info-note">
+        <strong>Note:</strong> Fermentables, Hops, Yeasts, and Miscs synchronization are currently active. 
+        Recipes sync will be available in future updates.
+      </p>
+    </div>
+  </div>
+</div>
