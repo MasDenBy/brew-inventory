@@ -1,0 +1,65 @@
+<div class="inventory-header">
+  <div class="header-left">
+    <h2 class="page-title">Inventory Management</h2>
+    <p class="page-subtitle">Manage your brewing ingredients and supplies</p>
+  </div>
+  <button class="btn btn-primary btn-lg" (click)="addNewIngredient()">
+    <span>➕</span> Add New Inventory
+  </button>
+</div>
+
+<div class="inventory-card">
+  <div class="table-wrapper">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Supplier</th>
+          <th>Amount</th>
+          <th>Expiration Date</th>
+          <th>Type</th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ingredient of ingredients" class="table-row">
+          <td class="ingredient-name">
+            <div class="name-cell">
+              <span class="ingredient-icon">📦</span>
+              <strong>{{ ingredient.name }}</strong>
+            </div>
+          </td>
+          <td class="supplier-cell">{{ ingredient.supplier || '—' }}</td>
+          <td class="amount-cell">
+            <span class="amount-badge">{{ ingredient.amount }}</span>
+          </td>
+          <td class="date-cell">{{ ingredient.expirationDate | date: 'MMM d, y' }}</td>
+          <td class="type-cell">
+            <span class="badge" [ngClass]="'badge-' + ingredient.type.toLowerCase()">
+              {{ ingredient.type }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn-icon btn-edit" (click)="editIngredient(ingredient)" title="Edit">
+                ✏️
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteIngredient(ingredient.id)" title="Delete">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="ingredients.length === 0" class="empty-state">
+      <div class="empty-icon">📦</div>
+      <h3>No ingredients yet</h3>
+      <p>Start by adding your first brewing ingredient to the inventory</p>
+      <button class="btn btn-primary" (click)="addNewIngredient()">
+        Add First Ingredient
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,96 @@
+<div class="form-container">
+  <div class="form-header">
+    <h2 class="form-title">
+      <span class="form-icon">📝</span>
+      {{ isEditMode ? 'Edit Ingredient' : 'Add New Ingredient' }}
+    </h2>
+    <p class="form-subtitle">Fill in the details below to manage your brewing inventory</p>
+  </div>
+
+  <form [formGroup]="ingredientForm" (ngSubmit)="onSubmit()" class="ingredient-form">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="name">
+          Ingredient Name <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="name" 
+          formControlName="name" 
+          placeholder="e.g., Pale Malt, Cascade Hops"
+          required 
+        />
+        <span class="error-message" *ngIf="ingredientForm.get('name')?.invalid && ingredientForm.get('name')?.touched">
+          Name is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="supplier">
+          Supplier
+        </label>
+        <input 
+          type="text" 
+          id="supplier" 
+          formControlName="supplier" 
+          placeholder="e.g., Local Homebrew Supply"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="amount">
+          Amount <span class="required">*</span>
+        </label>
+        <input 
+          type="number" 
+          id="amount" 
+          formControlName="amount" 
+          placeholder="e.g., 5"
+          min="0"
+          step="0.1"
+          required 
+        />
+        <span class="error-message" *ngIf="ingredientForm.get('amount')?.invalid && ingredientForm.get('amount')?.touched">
+          Amount is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="expirationDate">
+          Expiration Date
+        </label>
+        <input 
+          type="date" 
+          id="expirationDate" 
+          formControlName="expirationDate" 
+        />
+      </div>
+
+      <div class="form-group full-width">
+        <label for="type">
+          Ingredient Type <span class="required">*</span>
+        </label>
+        <select id="type" formControlName="type" required>
+          <option value="" disabled>Select a type...</option>
+          <option value="Fermentable">🌾 Fermentable (Malts, Grains, Sugars)</option>
+          <option value="Hops">🌿 Hops</option>
+          <option value="Yeast">🧫 Yeast</option>
+          <option value="Misc">📦 Miscellaneous (Spices, Additives, etc.)</option>
+        </select>
+        <span class="error-message" *ngIf="ingredientForm.get('type')?.invalid && ingredientForm.get('type')?.touched">
+          Type is required
+        </span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" (click)="onCancel()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="ingredientForm.invalid">
+        <span>💾</span>
+        {{ isEditMode ? 'Update Ingredient' : 'Add Ingredient' }}
+      </button>
+    </div>
+  </form>
+</div>
