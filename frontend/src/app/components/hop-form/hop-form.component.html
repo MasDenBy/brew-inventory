@@ -1,0 +1,150 @@
+<div class="form-container">
+  <div class="form-header">
+    <h2 class="form-title">
+      <span class="form-icon">🌿</span>
+      {{ isEditMode ? 'Edit Hop' : 'Add New Hop' }}
+    </h2>
+    <p class="form-subtitle">Fill in the details below to manage your hops inventory</p>
+  </div>
+
+  <form [formGroup]="hopForm" (ngSubmit)="onSubmit()" class="ingredient-form">
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="name">
+          Hop Name <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="name" 
+          formControlName="name"
+          placeholder="e.g., Cascade, Citra, Mosaic"
+        />
+        <span class="error-message" *ngIf="isFieldInvalid('name')">
+          Name is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="type">
+          Type <span class="required">*</span>
+        </label>
+        <select 
+          id="type" 
+          formControlName="type"
+        >
+          <option *ngFor="let type of hopTypes" [value]="type">
+            {{ type }}
+          </option>
+        </select>
+        <span class="error-message" *ngIf="isFieldInvalid('type')">
+          Type is required
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="origin">
+          Origin
+        </label>
+        <input 
+          type="text" 
+          id="origin" 
+          formControlName="origin"
+          placeholder="e.g., USA, Germany, New Zealand"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="alphaAcid">
+          Alpha Acid (%) <span class="required">*</span>
+        </label>
+        <input 
+          type="number" 
+          id="alphaAcid" 
+          formControlName="alphaAcid"
+          placeholder="e.g., 12.5"
+          step="0.1"
+          min="0"
+          max="100"
+        />
+        <span class="error-message" *ngIf="isFieldInvalid('alphaAcid')">
+          Alpha acid must be between 0 and 100
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="harvestYear">
+          Harvest Year
+        </label>
+        <input 
+          type="number" 
+          id="harvestYear" 
+          formControlName="harvestYear"
+          placeholder="e.g., 2024"
+          min="1900"
+          max="2100"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="amount">
+          Amount (g) <span class="required">*</span>
+        </label>
+        <input 
+          type="number" 
+          id="amount" 
+          formControlName="amount"
+          placeholder="e.g., 1000"
+          step="0.01"
+          min="0"
+        />
+        <span class="error-message" *ngIf="isFieldInvalid('amount')">
+          Amount must be a positive number
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="bestBefore">
+          Best Before
+        </label>
+        <input 
+          type="date" 
+          id="bestBefore" 
+          formControlName="bestBefore"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="brewfatherId">
+          Brewfather ID
+        </label>
+        <input 
+          type="text" 
+          id="brewfatherId" 
+          formControlName="brewfatherId"
+          placeholder="e.g., default-abc123"
+        />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn btn-outline" 
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        Cancel
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="hopForm.invalid || isSubmitting"
+      >
+        <span>💾</span>
+        {{ isSubmitting ? 'Saving...' : (isEditMode ? 'Update Hop' : 'Add Hop') }}
+      </button>
+    </div>
+  </form>
+</div>
