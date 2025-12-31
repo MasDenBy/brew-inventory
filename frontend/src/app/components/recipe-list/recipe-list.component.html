@@ -1,0 +1,46 @@
+<div class="inventory-header">
+  <div class="header-left">
+    <h2 class="page-title">Recipes</h2>
+    <p class="page-subtitle">Browse your brewing recipes</p>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="loading">Loading recipes...</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="!isLoading && !error" class="inventory-card">
+  <div *ngIf="recipes.length === 0" class="empty-state">
+    <p>No recipes found. Use the Sync feature to import recipes from Brewfather.</p>
+  </div>
+  
+  <div *ngIf="recipes.length > 0" class="table-wrapper">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Brewfather ID</th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let recipe of recipes" class="table-row">
+          <td class="ingredient-name">
+            <div class="name-cell">
+              <span class="ingredient-icon">📋</span>
+              <strong>{{ recipe.name }}</strong>
+            </div>
+          </td>
+          <td class="supplier-cell">{{ recipe.brewfatherId || '—' }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button class="btn-icon btn-view" (click)="viewRecipe(recipe.id)" title="View Details">
+                <span>👁️</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

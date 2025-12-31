@@ -64,7 +64,7 @@ export class SyncComponent {
   syncAll(): void {
     this.isSyncingAll = true;
     let completedSyncs = 0;
-    const totalSyncs = 4; // fermentables, hops, yeasts, and miscs
+    const totalSyncs = 5; // fermentables, hops, yeasts, miscs, and recipes
 
     const checkAllComplete = () => {
       completedSyncs++;
@@ -144,6 +144,25 @@ export class SyncComponent {
         error: (error) => {
           miscItem.status = 'error';
           miscItem.message = error.error?.error || 'Failed to sync miscs. Please try again.';
+          checkAllComplete();
+        }
+      });
+    }
+
+    // Sync recipes
+    const recipeItem = this.syncItems.find(i => i.name === 'recipes');
+    if (recipeItem) {
+      recipeItem.status = 'syncing';
+      recipeItem.message = undefined;
+      this.syncService.syncRecipes().subscribe({
+        next: (response) => {
+          recipeItem.status = 'success';
+          recipeItem.message = response.message || 'Recipes synced successfully!';
+          checkAllComplete();
+        },
+        error: (error) => {
+          recipeItem.status = 'error';
+          recipeItem.message = error.error?.error || 'Failed to sync recipes. Please try again.';
           checkAllComplete();
         }
       });
@@ -239,10 +258,20 @@ export class SyncComponent {
     if (!item) return;
 
     item.status = 'syncing';
-    item.message = 'Coming soon...';
-    setTimeout(() => {
-      item.status = 'idle';
-    }, 2000);
+    item.message = undefined;
+
+    this.syncService.syncRecipes().subscribe({
+      next: (response) => {
+        item.status = 'success';
+        item.message = response.message || 'Recipes synced successfully!';
+        this.isSyncingAll = false;
+      },
+      error: (error) => {
+        item.status = 'error';
+        item.message = error.error?.error || 'Failed to sync recipes. Please try again.';
+        this.isSyncingAll = false;
+      }
+    });
   }
 
   getStatusIcon(status: string): string {

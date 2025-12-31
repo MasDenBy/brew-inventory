@@ -8,6 +8,8 @@ import { YeastFormComponent } from './components/yeast-form/yeast-form.component
 import { MiscListComponent } from './components/misc-list/misc-list.component';
 import { MiscFormComponent } from './components/misc-form/misc-form.component';
 import { SyncComponent } from './components/sync/sync.component';
+import { RecipeListComponent } from './components/recipe-list/recipe-list.component';
+import { RecipeDetailsComponent } from './components/recipe-details/recipe-details.component';
 
 export const routes: Routes = [
   { path: '', component: FermentableListComponent },
@@ -23,5 +25,7 @@ export const routes: Routes = [
   { path: 'miscs', component: MiscListComponent },
   { path: 'miscs/add', component: MiscFormComponent },
   { path: 'miscs/edit/:id', component: MiscFormComponent },
+  { path: 'recipes', component: RecipeListComponent },
+  { path: 'recipes/:id', component: RecipeDetailsComponent },
   { path: 'sync', component: SyncComponent }
 ];
