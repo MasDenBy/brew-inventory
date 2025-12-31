@@ -79,5 +79,23 @@ public static class SyncEndpoints
                     title: "Synchronization failed");
             }
         });
+
+        group.MapPost("/recipes", async (
+            IBrewfatherSyncService syncService,
+            CancellationToken cancellationToken) =>
+        {
+            try
+            {
+                await syncService.SyncRecipesAsync(cancellationToken);
+                return Results.Ok(new { message = "Recipes synchronized successfully" });
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(
+                    detail: ex.Message,
+                    statusCode: 500,
+                    title: "Synchronization failed");
+            }
+        });
     }
 }

@@ -221,6 +221,263 @@ public class BrewfatherSyncService : IBrewfatherSyncService
         }
     }
 
+    public async Task SyncRecipesAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting recipes synchronization with Brewfather");
+
+        try
+        {
+            // Fetch all recipes from Brewfather with ingredients
+            var brewfatherRecipes = await _brewfatherClient
+                .GetAllItemsAsync<BrewfatherRecipe>("recipes", "fermentables,hops,miscs,yeasts", cancellationToken);
+
+            _logger.LogInformation("Retrieved {Count} recipes from Brewfather", brewfatherRecipes.Count);
+
+            // Get all existing recipes from database
+            var existingRecipes = await _dbContext.Recipes
+                .Include(r => r.RecipeFermentables)
+                .Include(r => r.RecipeHops)
+                .Include(r => r.RecipeMiscs)
+                .Include(r => r.RecipeYeasts)
+                .Where(r => r.BrewfatherId != null)
+                .ToDictionaryAsync(r => r.BrewfatherId!, cancellationToken);
+
+            // Get brewfather IDs that still exist in Brewfather
+            var brewfatherRecipeIds = brewfatherRecipes.Select(r => r._id).ToHashSet();
+
+            // Remove recipes that no longer exist in Brewfather
+            var recipesToDelete = existingRecipes.Values
+                .Where(r => !brewfatherRecipeIds.Contains(r.BrewfatherId!))
+                .ToList();
+
+            foreach (var recipeToDelete in recipesToDelete)
+            {
+                _dbContext.Recipes.Remove(recipeToDelete);
+            }
+
+            // Get inventory lookups for matching ingredients
+            var fermentableLookup = await _dbContext.Fermentables
+                .Where(f => f.BrewfatherId != null)
+                .ToDictionaryAsync(f => f.BrewfatherId!, cancellationToken);
+
+            var hopLookup = await _dbContext.Hops
+                .Where(h => h.BrewfatherId != null)
+                .ToDictionaryAsync(h => h.BrewfatherId!, cancellationToken);
+
+            var yeastLookup = await _dbContext.Yeasts
+                .Where(y => y.BrewfatherId != null)
+                .ToDictionaryAsync(y => y.BrewfatherId!, cancellationToken);
+
+            var miscLookup = await _dbContext.Miscs
+                .Where(m => m.BrewfatherId != null)
+                .ToDictionaryAsync(m => m.BrewfatherId!, cancellationToken);
+
+            var addedCount = 0;
+            var updatedCount = 0;
+            var deletedCount = recipesToDelete.Count;
+
+            foreach (var bfRecipe in brewfatherRecipes)
+            {
+                if (existingRecipes.TryGetValue(bfRecipe._id, out var existingRecipe))
+                {
+                    // Update existing recipe
+                    UpdateRecipeFromBrewfather(
+                        existingRecipe, 
+                        bfRecipe, 
+                        fermentableLookup, 
+                        hopLookup, 
+                        yeastLookup, 
+                        miscLookup);
+                    updatedCount++;
+                }
+                else
+                {
+                    // Add new recipe
+                    var newRecipe = CreateRecipeFromBrewfather(
+                        bfRecipe, 
+                        fermentableLookup, 
+                        hopLookup, 
+                        yeastLookup, 
+                        miscLookup);
+                    _dbContext.Recipes.Add(newRecipe);
+                    addedCount++;
+                }
+            }
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Recipes synchronization completed. Added: {Added}, Updated: {Updated}, Deleted: {Deleted}",
+                addedCount, updatedCount, deletedCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during recipes synchronization");
+            throw;
+        }
+    }
+
+    private Recipe CreateRecipeFromBrewfather(
+        BrewfatherRecipe bfRecipe,
+        Dictionary<string, Fermentable> fermentableLookup,
+        Dictionary<string, Hop> hopLookup,
+        Dictionary<string, Yeast> yeastLookup,
+        Dictionary<string, Misc> miscLookup)
+    {
+        var recipe = new Recipe
+        {
+            Name = bfRecipe.name,
+            BrewfatherId = bfRecipe._id
+        };
+
+        // Add fermentables
+        if (bfRecipe.fermentables != null)
+        {
+            foreach (var bfFermentable in bfRecipe.fermentables)
+            {
+                if (fermentableLookup.TryGetValue(bfFermentable._id, out var fermentable))
+                {
+                    recipe.RecipeFermentables.Add(new RecipeFermentable
+                    {
+                        FermentableId = fermentable.Id,
+                        Amount = (decimal)bfFermentable.amount
+                    });
+                }
+            }
+        }
+
+        // Add hops
+        if (bfRecipe.hops != null)
+        {
+            foreach (var bfHop in bfRecipe.hops)
+            {
+                if (hopLookup.TryGetValue(bfHop._id, out var hop))
+                {
+                    recipe.RecipeHops.Add(new RecipeHop
+                    {
+                        HopId = hop.Id,
+                        Amount = (decimal)bfHop.amount
+                    });
+                }
+            }
+        }
+
+        // Add yeasts
+        if (bfRecipe.yeasts != null)
+        {
+            foreach (var bfYeast in bfRecipe.yeasts)
+            {
+                if (yeastLookup.TryGetValue(bfYeast._id, out var yeast))
+                {
+                    recipe.RecipeYeasts.Add(new RecipeYeast
+                    {
+                        YeastId = yeast.Id,
+                        Amount = (decimal)bfYeast.amount
+                    });
+                }
+            }
+        }
+
+        // Add miscs
+        if (bfRecipe.miscs != null)
+        {
+            foreach (var bfMisc in bfRecipe.miscs)
+            {
+                if (miscLookup.TryGetValue(bfMisc._id, out var misc))
+                {
+                    recipe.RecipeMiscs.Add(new RecipeMisc
+                    {
+                        MiscId = misc.Id,
+                        Amount = (decimal)bfMisc.amount
+                    });
+                }
+            }
+        }
+
+        return recipe;
+    }
+
+    private void UpdateRecipeFromBrewfather(
+        Recipe existingRecipe,
+        BrewfatherRecipe bfRecipe,
+        Dictionary<string, Fermentable> fermentableLookup,
+        Dictionary<string, Hop> hopLookup,
+        Dictionary<string, Yeast> yeastLookup,
+        Dictionary<string, Misc> miscLookup)
+    {
+        existingRecipe.Name = bfRecipe.name;
+
+        // Clear existing ingredients
+        existingRecipe.RecipeFermentables.Clear();
+        existingRecipe.RecipeHops.Clear();
+        existingRecipe.RecipeYeasts.Clear();
+        existingRecipe.RecipeMiscs.Clear();
+
+        // Add fermentables
+        if (bfRecipe.fermentables != null)
+        {
+            foreach (var bfFermentable in bfRecipe.fermentables)
+            {
+                if (fermentableLookup.TryGetValue(bfFermentable._id, out var fermentable))
+                {
+                    existingRecipe.RecipeFermentables.Add(new RecipeFermentable
+                    {
+                        FermentableId = fermentable.Id,
+                        Amount = (decimal)bfFermentable.amount
+                    });
+                }
+            }
+        }
+
+        // Add hops
+        if (bfRecipe.hops != null)
+        {
+            foreach (var bfHop in bfRecipe.hops)
+            {
+                if (hopLookup.TryGetValue(bfHop._id, out var hop))
+                {
+                    existingRecipe.RecipeHops.Add(new RecipeHop
+                    {
+                        HopId = hop.Id,
+                        Amount = (decimal)bfHop.amount
+                    });
+                }
+            }
+        }
+
+        // Add yeasts
+        if (bfRecipe.yeasts != null)
+        {
+            foreach (var bfYeast in bfRecipe.yeasts)
+            {
+                if (yeastLookup.TryGetValue(bfYeast._id, out var yeast))
+                {
+                    existingRecipe.RecipeYeasts.Add(new RecipeYeast
+                    {
+                        YeastId = yeast.Id,
+                        Amount = (decimal)bfYeast.amount
+                    });
+                }
+            }
+        }
+
+        // Add miscs
+        if (bfRecipe.miscs != null)
+        {
+            foreach (var bfMisc in bfRecipe.miscs)
+            {
+                if (miscLookup.TryGetValue(bfMisc._id, out var misc))
+                {
+                    existingRecipe.RecipeMiscs.Add(new RecipeMisc
+                    {
+                        MiscId = misc.Id,
+                        Amount = (decimal)bfMisc.amount
+                    });
+                }
+            }
+        }
+    }
+
     private Fermentable CreateFermentableFromBrewfather(BrewfatherFermentable bfFermentable)
     {
         return new Fermentable

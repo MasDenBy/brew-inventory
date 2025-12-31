@@ -1,0 +1,176 @@
+<div *ngIf="isLoading" class="loading">Loading recipe...</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="!isLoading && !error && recipe" class="recipe-details">
+  <div class="inventory-header">
+    <div class="header-left">
+      <h2 class="page-title">{{ recipe.name }}</h2>
+      <p class="page-subtitle" *ngIf="recipe.brewfatherId">Brewfather ID: {{ recipe.brewfatherId }}</p>
+    </div>
+    <button class="btn btn-secondary" (click)="goBack()">
+      <span>←</span> Back to Recipes
+    </button>
+  </div>
+
+  <!-- Fermentables Section -->
+  <div class="ingredient-section" *ngIf="recipe.fermentables.length > 0">
+    <h3 class="section-title">
+      <span class="section-icon">🌾</span>
+      Fermentables
+    </h3>
+    <div class="inventory-card">
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Amount (kg)</th>
+              <th>Supplier</th>
+              <th>Origin</th>
+              <th>Color (EBC)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fermentable of recipe.fermentables">
+              <td class="ingredient-name">
+                <strong>{{ fermentable.name }}</strong>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="'badge-' + fermentable.type.toLowerCase()">{{ fermentable.type }}</span>
+              </td>
+              <td class="amount-cell">
+                <span class="amount-badge">{{ fermentable.amount }}</span>
+              </td>
+              <td class="supplier-cell">{{ fermentable.supplier || '—' }}</td>
+              <td class="supplier-cell">{{ fermentable.origin || '—' }}</td>
+              <td class="amount-cell">{{ fermentable.color }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hops Section -->
+  <div class="ingredient-section" *ngIf="recipe.hops.length > 0">
+    <h3 class="section-title">
+      <span class="section-icon">🌿</span>
+      Hops
+    </h3>
+    <div class="inventory-card">
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Amount (g)</th>
+              <th>Origin</th>
+              <th>Alpha Acid (%)</th>
+              <th>Harvest Year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let hop of recipe.hops">
+              <td class="ingredient-name">
+                <strong>{{ hop.name }}</strong>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="'badge-' + hop.type.toLowerCase()">{{ hop.type }}</span>
+              </td>
+              <td class="amount-cell">
+                <span class="amount-badge">{{ hop.amount }}</span>
+              </td>
+              <td class="supplier-cell">{{ hop.origin || '—' }}</td>
+              <td class="amount-cell">{{ hop.alphaAcid }}</td>
+              <td class="supplier-cell">{{ hop.harvestYear || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yeasts Section -->
+  <div class="ingredient-section" *ngIf="recipe.yeasts.length > 0">
+    <h3 class="section-title">
+      <span class="section-icon">🧫</span>
+      Yeasts
+    </h3>
+    <div class="inventory-card">
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Form</th>
+              <th>Amount</th>
+              <th>Laboratory</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let yeast of recipe.yeasts">
+              <td class="ingredient-name">
+                <strong>{{ yeast.name }}</strong>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="'badge-' + yeast.type.toLowerCase()">{{ yeast.type }}</span>
+              </td>
+              <td>
+                <span class="badge badge-form">{{ yeast.form }}</span>
+              </td>
+              <td class="amount-cell">
+                <span class="amount-badge">{{ yeast.amount }}</span>
+              </td>
+              <td class="supplier-cell">{{ yeast.laboratory }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Miscs Section -->
+  <div class="ingredient-section" *ngIf="recipe.miscs.length > 0">
+    <h3 class="section-title">
+      <span class="section-icon">⚗️</span>
+      Miscellaneous
+    </h3>
+    <div class="inventory-card">
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let misc of recipe.miscs">
+              <td class="ingredient-name">
+                <strong>{{ misc.name }}</strong>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="'badge-' + misc.type.toLowerCase()">{{ misc.type }}</span>
+              </td>
+              <td class="amount-cell">
+                <span class="amount-badge">{{ misc.amount }}</span>
+              </td>
+              <td class="supplier-cell">{{ misc.unit }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="recipe.fermentables.length === 0 && recipe.hops.length === 0 && recipe.yeasts.length === 0 && recipe.miscs.length === 0" class="empty-state">
+    <p>This recipe has no ingredients defined.</p>
+  </div>
+</div>

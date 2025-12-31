@@ -30,6 +30,11 @@ public class BrewfatherClient : IBrewfatherClient
 
     public async Task<List<T>> GetAllInventoryItemsAsync<T>(string endpoint, CancellationToken cancellationToken = default)
     {
+        return await GetAllItemsAsync<T>(endpoint, null, cancellationToken);
+    }
+
+    public async Task<List<T>> GetAllItemsAsync<T>(string endpoint, string? include = null, CancellationToken cancellationToken = default)
+    {
         var allItems = new List<T>();
         string? startAfter = null;
         bool hasMore = true;
@@ -40,6 +45,10 @@ public class BrewfatherClient : IBrewfatherClient
             if (!string.IsNullOrEmpty(startAfter))
             {
                 url += $"&start_after={startAfter}";
+            }
+            if (!string.IsNullOrEmpty(include))
+            {
+                url += $"&include={include}";
             }
 
             try

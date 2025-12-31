@@ -64,6 +64,7 @@ app.MapFermentableEndpoints();
 app.MapHopEndpoints();
 app.MapYeastEndpoints();
 app.MapMiscEndpoints();
+app.MapRecipeEndpoints();
 app.MapSyncEndpoints();
 
 app.Run();

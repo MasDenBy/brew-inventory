@@ -1,0 +1,272 @@
+.recipe-details {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.header-left {
+  flex: 1;
+  min-width: 250px;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ingredient-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.inventory-card {
+  background-color: var(--surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.inventory-table thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.inventory-table th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.inventory-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: rgba(66, 133, 244, 0.05);
+}
+
+.inventory-table td {
+  padding: 1rem;
+  color: var(--text-primary);
+}
+
+.ingredient-name {
+  font-weight: 500;
+}
+
+.supplier-cell {
+  color: var(--text-secondary);
+}
+
+.amount-cell {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.amount-badge {
+  background-color: rgba(66, 133, 244, 0.1);
+  color: var(--primary-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badge-grain,
+.badge-malt {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-sugar {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.badge-adjunct {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-pellet {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge-leaf {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-plug {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-ale {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.badge-lager {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.badge-wheat {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge-wine {
+  background-color: #e7d4f8;
+  color: #5a1d7a;
+}
+
+.badge-champagne {
+  background-color: #ffe4cc;
+  color: #8b4513;
+}
+
+.badge-form,
+.badge-spice,
+.badge-fining,
+.badge-herb,
+.badge-flavor,
+.badge-water-agent,
+.badge-other {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.badge-dry,
+.badge-liquid {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .inventory-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .table-wrapper {
+    overflow-x: scroll;
+  }
+
+  .inventory-table {
+    font-size: 0.85rem;
+  }
+
+  .inventory-table th,
+  .inventory-table td {
+    padding: 0.75rem 0.5rem;
+  }
+}
