@@ -10,6 +10,7 @@ import { MiscFormComponent } from './components/misc-form/misc-form.component';
 import { SyncComponent } from './components/sync/sync.component';
 import { RecipeListComponent } from './components/recipe-list/recipe-list.component';
 import { RecipeDetailsComponent } from './components/recipe-details/recipe-details.component';
+import { IngredientPurchaseComponent } from './components/ingredient-purchase/ingredient-purchase.component';
 
 export const routes: Routes = [
   { path: '', component: FermentableListComponent },
@@ -27,5 +28,6 @@ export const routes: Routes = [
   { path: 'miscs/edit/:id', component: MiscFormComponent },
   { path: 'recipes', component: RecipeListComponent },
   { path: 'recipes/:id', component: RecipeDetailsComponent },
+  { path: 'ingredient-purchase', component: IngredientPurchaseComponent },
   { path: 'sync', component: SyncComponent }
 ];

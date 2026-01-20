@@ -66,5 +66,6 @@ app.MapYeastEndpoints();
 app.MapMiscEndpoints();
 app.MapRecipeEndpoints();
 app.MapSyncEndpoints();
+app.MapIngredientPurchaseEndpoints();
 
 app.Run();
