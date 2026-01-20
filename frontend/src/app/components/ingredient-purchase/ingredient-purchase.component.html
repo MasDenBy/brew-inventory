@@ -1,0 +1,191 @@
+<div class="inventory-header">
+  <div class="header-left">
+    <h2 class="page-title">Ingredient Purchase Calculator</h2>
+    <p class="page-subtitle">Calculate ingredient needs for selected recipes</p>
+  </div>
+</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<div *ngIf="isLoadingRecipes" class="loading">Loading recipes...</div>
+
+<div *ngIf="!isLoadingRecipes && !purchaseData" class="inventory-card">
+  <div class="recipe-selection-section">
+    <h3 class="section-title">Select Recipes to Brew</h3>
+    
+    <div *ngIf="recipes.length === 0" class="empty-state">
+      <p>No recipes found. Use the Sync feature to import recipes from Brewfather.</p>
+    </div>
+
+    <div *ngIf="recipes.length > 0" class="recipe-list">
+      <div *ngFor="let recipe of recipes" class="recipe-item">
+        <label class="recipe-checkbox">
+          <input 
+            type="checkbox" 
+            [checked]="isRecipeSelected(recipe.id)"
+            (change)="toggleRecipeSelection(recipe.id)"
+          />
+          <span class="recipe-icon">📋</span>
+          <span class="recipe-name">{{ recipe.name }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div *ngIf="recipes.length > 0" class="button-group">
+      <button 
+        class="btn btn-primary" 
+        (click)="calculatePurchaseNeeds()"
+        [disabled]="selectedRecipeIds.length === 0 || isCalculating"
+      >
+        {{ isCalculating ? 'Calculating...' : 'Calculate Purchase Needs' }}
+      </button>
+      <p class="selection-info">
+        {{ selectedRecipeIds.length }} recipe(s) selected
+      </p>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!isLoadingRecipes && purchaseData" class="inventory-card">
+  <div class="results-header">
+    <h3 class="section-title">Ingredient Purchase List</h3>
+    <div class="results-actions">
+      <button class="btn btn-secondary" (click)="resetCalculation()">
+         Back to Recipe Selection
+      </button>
+      <button class="btn btn-primary" (click)="exportPurchaseNeeds()" [disabled]="isExporting">
+        {{ isExporting ? 'Exporting...' : 'Export Excel' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!hasAnyIngredients()" class="empty-state">
+    <p>No ingredients need to be purchased. You have everything in stock!</p>
+  </div>
+
+  <div *ngIf="hasAnyIngredients()">
+    <!-- Fermentables -->
+    <div *ngIf="purchaseData.fermentables.length > 0" class="ingredient-section">
+      <h4 class="ingredient-category">🌾 Fermentables</h4>
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th class="number-column">Needed</th>
+              <th class="number-column">In Stock</th>
+              <th class="number-column">To Buy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of purchaseData.fermentables" class="table-row">
+              <td class="ingredient-name">
+                <strong>{{ item.name }}</strong>
+              </td>
+              <td>{{ item.type }}</td>
+              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'kg' }}</td>
+              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'kg' }}</td>
+              <td class="number-column highlight-amount">
+                <strong>{{ item.amountToBuy }} {{ item.unit || 'kg' }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Hops -->
+    <div *ngIf="purchaseData.hops.length > 0" class="ingredient-section">
+      <h4 class="ingredient-category">🌿 Hops</h4>
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th class="number-column">Needed</th>
+              <th class="number-column">In Stock</th>
+              <th class="number-column">To Buy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of purchaseData.hops" class="table-row">
+              <td class="ingredient-name">
+                <strong>{{ item.name }}</strong>
+              </td>
+              <td>{{ item.type }}</td>
+              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'g' }}</td>
+              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'g' }}</td>
+              <td class="number-column highlight-amount">
+                <strong>{{ item.amountToBuy }} {{ item.unit || 'g' }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Yeasts -->
+    <div *ngIf="purchaseData.yeasts.length > 0" class="ingredient-section">
+      <h4 class="ingredient-category">🧫 Yeasts</h4>
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th class="number-column">Needed</th>
+              <th class="number-column">In Stock</th>
+              <th class="number-column">To Buy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of purchaseData.yeasts" class="table-row">
+              <td class="ingredient-name">
+                <strong>{{ item.name }}</strong>
+              </td>
+              <td>{{ item.type }}</td>
+              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'pkg' }}</td>
+              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'pkg' }}</td>
+              <td class="number-column highlight-amount">
+                <strong>{{ item.amountToBuy }} {{ item.unit || 'pkg' }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Miscs -->
+    <div *ngIf="purchaseData.miscs.length > 0" class="ingredient-section">
+      <h4 class="ingredient-category">⚗️ Miscellaneous</h4>
+      <div class="table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th class="number-column">Needed</th>
+              <th class="number-column">In Stock</th>
+              <th class="number-column">To Buy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of purchaseData.miscs" class="table-row">
+              <td class="ingredient-name">
+                <strong>{{ item.name }}</strong>
+              </td>
+              <td>{{ item.type }}</td>
+              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'g' }}</td>
+              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'g' }}</td>
+              <td class="number-column highlight-amount">
+                <strong>{{ item.amountToBuy }} {{ item.unit || 'g' }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
