@@ -2,6 +2,7 @@ using BrewInventory.App.Data;
 using BrewInventory.App.Endpoints;
 using BrewInventory.App.Models;
 using BrewInventory.App.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,14 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Apply any pending database migrations on startup.
+// Safe to run on every start; necessary to provision the schema on a fresh volume.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<BrewInventoryContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -7,5 +7,6 @@ public enum MiscType : int
     Fruit,
     Flavor,
     WaterAgent,
-    Other
+    Other,
+    Fining
 }
