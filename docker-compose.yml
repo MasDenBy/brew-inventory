@@ -1,0 +1,21 @@
+name: brew-inventory
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brew-inventory
+    ports:
+      - "${PORT:-5000}:8080"
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    volumes:
+      - db-data:/app
+    restart: unless-stopped
+
+volumes:
+  db-data:

@@ -1,0 +1,33 @@
+# Build context: repo root
+
+# Dependencies
+**/node_modules
+**/obj
+**/bin
+frontend/.angular
+
+# VCS and IDE
+.git
+.gitignore
+.vs
+.vscode
+frontend/.vscode
+frontend/.editorconfig
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Database files (created at runtime, persisted in a volume)
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# Built frontend output (rebuilt inside the container)
+**/wwwroot
+
+# Logs
+**/log
+**/logs
+*.log

@@ -275,18 +275,28 @@ public class BrewfatherSyncService : IBrewfatherSyncService
             var addedCount = 0;
             var updatedCount = 0;
             var deletedCount = recipesToDelete.Count;
+            var missingIngredientsCount = 0;
 
             foreach (var bfRecipe in brewfatherRecipes)
             {
+                // Create missing ingredients before processing recipe
+                missingIngredientsCount += await EnsureIngredientsExistAsync(
+                    bfRecipe,
+                    fermentableLookup,
+                    hopLookup,
+                    yeastLookup,
+                    miscLookup,
+                    cancellationToken);
+
                 if (existingRecipes.TryGetValue(bfRecipe._id, out var existingRecipe))
                 {
                     // Update existing recipe
                     UpdateRecipeFromBrewfather(
-                        existingRecipe, 
-                        bfRecipe, 
-                        fermentableLookup, 
-                        hopLookup, 
-                        yeastLookup, 
+                        existingRecipe,
+                        bfRecipe,
+                        fermentableLookup,
+                        hopLookup,
+                        yeastLookup,
                         miscLookup);
                     updatedCount++;
                 }
@@ -294,10 +304,10 @@ public class BrewfatherSyncService : IBrewfatherSyncService
                 {
                     // Add new recipe
                     var newRecipe = CreateRecipeFromBrewfather(
-                        bfRecipe, 
-                        fermentableLookup, 
-                        hopLookup, 
-                        yeastLookup, 
+                        bfRecipe,
+                        fermentableLookup,
+                        hopLookup,
+                        yeastLookup,
                         miscLookup);
                     _dbContext.Recipes.Add(newRecipe);
                     addedCount++;
@@ -307,14 +317,134 @@ public class BrewfatherSyncService : IBrewfatherSyncService
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Recipes synchronization completed. Added: {Added}, Updated: {Updated}, Deleted: {Deleted}",
-                addedCount, updatedCount, deletedCount);
+                "Recipes synchronization completed. Added: {Added}, Updated: {Updated}, Deleted: {Deleted}, Missing Ingredients Created: {MissingIngredients}",
+                addedCount, updatedCount, deletedCount, missingIngredientsCount);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during recipes synchronization");
             throw;
         }
+    }
+
+    private async Task<int> EnsureIngredientsExistAsync(
+        BrewfatherRecipe bfRecipe,
+        Dictionary<string, Fermentable> fermentableLookup,
+        Dictionary<string, Hop> hopLookup,
+        Dictionary<string, Yeast> yeastLookup,
+        Dictionary<string, Misc> miscLookup,
+        CancellationToken cancellationToken)
+    {
+        var createdCount = 0;
+
+        // Check and create missing fermentables
+        if (bfRecipe.fermentables != null)
+        {
+            foreach (var bfFermentable in bfRecipe.fermentables)
+            {
+                if (!fermentableLookup.ContainsKey(bfFermentable._id))
+                {
+                    var newFermentable = new Fermentable
+                    {
+                        Name = bfFermentable.name,
+                        Amount = 0, // Set amount to 0 as ingredient is not in inventory
+                        BrewfatherId = bfFermentable._id,
+                        Supplier = string.IsNullOrWhiteSpace(bfFermentable.supplier) ? null : bfFermentable.supplier,
+                        Origin = string.IsNullOrWhiteSpace(bfFermentable.origin) ? null : bfFermentable.origin,
+                        Type = MapBrewfatherType(bfFermentable.type),
+                        Color = bfFermentable.color ?? 0,
+                        BestBefore = null
+                    };
+                    _dbContext.Fermentables.Add(newFermentable);
+                    fermentableLookup[bfFermentable._id] = newFermentable;
+                    createdCount++;
+                    _logger.LogInformation("Created missing fermentable: {Name} with BrewfatherId: {Id}", newFermentable.Name, newFermentable.BrewfatherId);
+                }
+            }
+        }
+
+        // Check and create missing hops
+        if (bfRecipe.hops != null)
+        {
+            foreach (var bfHop in bfRecipe.hops)
+            {
+                if (!hopLookup.ContainsKey(bfHop._id))
+                {
+                    var newHop = new Hop
+                    {
+                        Name = bfHop.name,
+                        Amount = 0, // Set amount to 0 as ingredient is not in inventory
+                        BrewfatherId = bfHop._id,
+                        AlphaAcid = bfHop.alpha ?? 0,
+                        Type = MapBrewfatherHopType(bfHop.type),
+                        Origin = string.IsNullOrWhiteSpace(bfHop.origin) ? null : bfHop.origin,
+                        HarvestYear = null,
+                        BestBefore = null
+                    };
+                    _dbContext.Hops.Add(newHop);
+                    hopLookup[bfHop._id] = newHop;
+                    createdCount++;
+                    _logger.LogInformation("Created missing hop: {Name} with BrewfatherId: {Id}", newHop.Name, newHop.BrewfatherId);
+                }
+            }
+        }
+
+        // Check and create missing yeasts
+        if (bfRecipe.yeasts != null)
+        {
+            foreach (var bfYeast in bfRecipe.yeasts)
+            {
+                if (!yeastLookup.ContainsKey(bfYeast._id))
+                {
+                    var newYeast = new Yeast
+                    {
+                        Name = bfYeast.name,
+                        Amount = 0, // Set amount to 0 as ingredient is not in inventory
+                        BrewfatherId = bfYeast._id,
+                        Type = MapBrewfatherYeastType(bfYeast.type),
+                        Labaratory = string.IsNullOrWhiteSpace(bfYeast.laboratory) ? "Unknown" : bfYeast.laboratory,
+                        Form = MapBrewfatherYeastForm(bfYeast.form),
+                        BestBefore = null
+                    };
+                    _dbContext.Yeasts.Add(newYeast);
+                    yeastLookup[bfYeast._id] = newYeast;
+                    createdCount++;
+                    _logger.LogInformation("Created missing yeast: {Name} with BrewfatherId: {Id}", newYeast.Name, newYeast.BrewfatherId);
+                }
+            }
+        }
+
+        // Check and create missing miscs
+        if (bfRecipe.miscs != null)
+        {
+            foreach (var bfMisc in bfRecipe.miscs)
+            {
+                if (!miscLookup.ContainsKey(bfMisc._id))
+                {
+                    var newMisc = new Misc
+                    {
+                        Name = bfMisc.name,
+                        Amount = 0, // Set amount to 0 as ingredient is not in inventory
+                        BrewfatherId = bfMisc._id,
+                        Type = MapBrewfatherMiscType(bfMisc.type),
+                        Unit = MapBrewfatherMiscUnit(bfMisc.unit),
+                        BestBefore = null
+                    };
+                    _dbContext.Miscs.Add(newMisc);
+                    miscLookup[bfMisc._id] = newMisc;
+                    createdCount++;
+                    _logger.LogInformation("Created missing misc: {Name} with BrewfatherId: {Id}", newMisc.Name, newMisc.BrewfatherId);
+                }
+            }
+        }
+
+        // Save all new ingredients immediately so they have IDs for the recipe
+        if (createdCount > 0)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return createdCount;
     }
 
     private Recipe CreateRecipeFromBrewfather(
@@ -569,7 +699,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
         // Keep existing Unit and BestBefore values
     }
 
-    private FermentableType MapBrewfatherType(string brewfatherType)
+    private FermentableType MapBrewfatherType(string? brewfatherType)
     {
         return brewfatherType?.ToLowerInvariant() switch
         {
@@ -582,7 +712,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
         };
     }
 
-    private HopType MapBrewfatherHopType(string brewfatherType)
+    private HopType MapBrewfatherHopType(string? brewfatherType)
     {
         return brewfatherType?.ToLowerInvariant() switch
         {
@@ -594,7 +724,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
         };
     }
 
-    private YeastType MapBrewfatherYeastType(string brewfatherType)
+    private YeastType MapBrewfatherYeastType(string? brewfatherType)
     {
         return brewfatherType?.ToLowerInvariant() switch
         {
@@ -608,7 +738,19 @@ public class BrewfatherSyncService : IBrewfatherSyncService
         };
     }
 
-    private MiscType MapBrewfatherMiscType(string brewfatherType)
+    private YeastForm MapBrewfatherYeastForm(string? brewfatherForm)
+    {
+        return brewfatherForm?.ToLowerInvariant() switch
+        {
+            "dry" => YeastForm.Dry,
+            "liquid" => YeastForm.Liquid,
+            "slurry" => YeastForm.Slurry,
+            "culture" => YeastForm.Culture,
+            _ => YeastForm.Liquid
+        };
+    }
+
+    private MiscType MapBrewfatherMiscType(string? brewfatherType)
     {
         return brewfatherType?.ToLowerInvariant() switch
         {
@@ -616,8 +758,23 @@ public class BrewfatherSyncService : IBrewfatherSyncService
             "herb" => MiscType.Herb,
             "fruit" => MiscType.Fruit,
             "flavor" or "flavoring" => MiscType.Flavor,
+            "fining" => MiscType.Fining,
             "water agent" or "water" => MiscType.WaterAgent,
             _ => MiscType.Other
+        };
+    }
+
+    private InventoryUnit MapBrewfatherMiscUnit(string? brewfatherUnit)
+    {
+        return brewfatherUnit?.ToLowerInvariant() switch
+        {
+            "g" or "gram" or "grams" => InventoryUnit.Grams,
+            "kg" or "kilogram" or "kilograms" => InventoryUnit.Kilograms,
+            "ml" or "milliliter" or "milliliters" => InventoryUnit.Milliliters,
+            "l" or "liter" or "liters" => InventoryUnit.Liters,
+            "pkg" or "package" or "packages" => InventoryUnit.Packages,
+            "tablet" or "tablets" => InventoryUnit.Tablets,
+            _ => InventoryUnit.Grams
         };
     }
 }
