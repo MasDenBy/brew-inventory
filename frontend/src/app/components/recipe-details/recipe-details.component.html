@@ -7,11 +7,24 @@
     <div class="header-left">
       <h2 class="page-title">{{ recipe.name }}</h2>
       <p class="page-subtitle" *ngIf="recipe.brewfatherId">Brewfather ID: {{ recipe.brewfatherId }}</p>
+      <p class="page-subtitle" *ngIf="!recipe.brewfatherId">Not yet created in Brewfather</p>
     </div>
-    <button class="btn btn-secondary" (click)="goBack()">
-      <span>←</span> Back to Recipes
-    </button>
+    <div class="header-actions">
+      <button
+        *ngIf="!recipe.brewfatherId"
+        class="btn btn-primary"
+        (click)="syncToBrewfather()"
+        [disabled]="isSyncing">
+        <span>{{ isSyncing ? 'Creating...' : 'Create in Brewfather' }}</span>
+      </button>
+      <button class="btn btn-secondary" (click)="goBack()">
+        <span>←</span> Back to Recipes
+      </button>
+    </div>
   </div>
+
+  <div *ngIf="syncSuccess" class="sync-status sync-success">{{ syncSuccess }}</div>
+  <div *ngIf="syncError" class="sync-status sync-error">{{ syncError }}</div>
 
   <!-- Fermentables Section -->
   <div class="ingredient-section" *ngIf="recipe.fermentables.length > 0">

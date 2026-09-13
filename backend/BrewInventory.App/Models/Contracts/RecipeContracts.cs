@@ -46,3 +46,22 @@ public record RecipeMiscDetail(
     string Type,
     string Unit,
     decimal Amount);
+
+// Request DTOs for creating recipes
+public record CreateRecipeRequest(
+    string Name,
+    List<CreateRecipeFermentableRequest> Fermentables,
+    List<CreateRecipeHopRequest> Hops,
+    List<CreateRecipeYeastRequest> Yeasts,
+    List<CreateRecipeMiscRequest> Miscs);
+
+public record CreateRecipeFermentableRequest(int FermentableId, decimal Amount);
+public record CreateRecipeHopRequest(int HopId, decimal Amount);
+public record CreateRecipeYeastRequest(int YeastId, decimal Amount);
+public record CreateRecipeMiscRequest(int MiscId, decimal Amount);
+
+// Response for sync endpoint
+public record SyncRecipeResponse(
+    int Id,
+    string Name,
+    string BrewfatherId);

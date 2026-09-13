@@ -50,3 +50,37 @@ export interface RecipeMiscDetail {
   unit: string;
   amount: number;
 }
+
+export interface CreateRecipeRequest {
+  name: string;
+  fermentables: CreateRecipeFermentableRequest[];
+  hops: CreateRecipeHopRequest[];
+  yeasts: CreateRecipeYeastRequest[];
+  miscs: CreateRecipeMiscRequest[];
+}
+
+export interface CreateRecipeFermentableRequest {
+  fermentableId: number;
+  amount: number;
+}
+
+export interface CreateRecipeHopRequest {
+  hopId: number;
+  amount: number;
+}
+
+export interface CreateRecipeYeastRequest {
+  yeastId: number;
+  amount: number;
+}
+
+export interface CreateRecipeMiscRequest {
+  miscId: number;
+  amount: number;
+}
+
+export interface SyncRecipeResponse {
+  id: number;
+  name: string;
+  brewfatherId: string;
+}

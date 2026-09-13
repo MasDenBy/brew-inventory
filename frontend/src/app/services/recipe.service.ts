@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { RecipeListResponse, RecipeDetailsResponse } from '../models/recipe.model';
+import { RecipeListResponse, RecipeDetailsResponse, CreateRecipeRequest, SyncRecipeResponse } from '../models/recipe.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -18,5 +18,13 @@ export class RecipeService {
 
   getRecipe(id: number): Observable<RecipeDetailsResponse> {
     return this.http.get<RecipeDetailsResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  createRecipe(recipe: CreateRecipeRequest): Observable<RecipeDetailsResponse> {
+    return this.http.post<RecipeDetailsResponse>(this.apiUrl, recipe);
+  }
+
+  syncRecipe(id: number): Observable<SyncRecipeResponse> {
+    return this.http.post<SyncRecipeResponse>(`${this.apiUrl}/${id}/sync`, {});
   }
 }

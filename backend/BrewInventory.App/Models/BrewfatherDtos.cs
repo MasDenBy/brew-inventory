@@ -99,3 +99,17 @@ public record BrewfatherRecipeYeast(
     double? attenuation,
     string? unit
 );
+
+// DTOs for creating recipes via Brewfather API
+public record BrewfatherCreateRecipeRequest(
+    string name,
+    string type,
+    List<BrewfatherRecipeFermentable> fermentables,
+    List<BrewfatherRecipeHop> hops,
+    List<BrewfatherRecipeMisc> miscs,
+    List<BrewfatherRecipeYeast> yeasts
+);
+
+public record BrewfatherCreateRecipeResponse(
+    string Id
+);

@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using BrewInventory.App.Models;
@@ -99,5 +100,32 @@ public class BrewfatherClient : IBrewfatherClient
         }
 
         return allItems;
+    }
+
+    public async Task<string> CreateRecipeAsync(BrewfatherCreateRecipeRequest recipe, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("recipes", recipe, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            var result = JsonSerializer.Deserialize<BrewfatherCreateRecipeResponse>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (result is null || string.IsNullOrWhiteSpace(result.Id))
+            {
+                throw new InvalidOperationException("Brewfather API did not return a recipe id.");
+            }
+
+            return result.Id;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating recipe in Brewfather API: {Name}", recipe.name);
+            throw;
+        }
     }
 }
