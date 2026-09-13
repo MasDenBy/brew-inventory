@@ -699,6 +699,218 @@ public class BrewfatherSyncService : IBrewfatherSyncService
         // Keep existing Unit and BestBefore values
     }
 
+    public async Task<Recipe> PushRecipeToBrewfatherAsync(int recipeId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Starting push of recipe {RecipeId} to Brewfather", recipeId);
+
+        var recipe = await _dbContext.Recipes
+            .Include(r => r.RecipeFermentables)
+                .ThenInclude(rf => rf.Fermentable)
+            .Include(r => r.RecipeHops)
+                .ThenInclude(rh => rh.Hop)
+            .Include(r => r.RecipeYeasts)
+                .ThenInclude(ry => ry.Yeast)
+            .Include(r => r.RecipeMiscs)
+                .ThenInclude(rm => rm.Misc)
+            .FirstOrDefaultAsync(r => r.Id == recipeId, cancellationToken);
+
+        if (recipe is null)
+        {
+            throw new KeyNotFoundException($"Recipe {recipeId} does not exist.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(recipe.BrewfatherId))
+        {
+            throw new InvalidOperationException($"Recipe {recipeId} has already been created in Brewfather.");
+        }
+
+        var missingIngredients = GetIngredientsWithoutBrewfatherId(recipe);
+        if (missingIngredients.Count > 0)
+        {
+            var details = string.Join(", ", missingIngredients);
+            throw new InvalidOperationException(
+                $"Recipe contains ingredients that are not yet known to Brewfather: {details}. " +
+                "Sync these ingredients to Brewfather first.");
+        }
+
+        var brewfatherRequest = CreateBrewfatherRecipeRequest(recipe);
+
+        var brewfatherId = await _brewfatherClient.CreateRecipeAsync(brewfatherRequest, cancellationToken);
+
+        recipe.BrewfatherId = brewfatherId;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Recipe {RecipeId} pushed to Brewfather with id {BrewfatherId}",
+            recipeId, brewfatherId);
+
+        return recipe;
+    }
+
+    private static List<string> GetIngredientsWithoutBrewfatherId(Recipe recipe)
+    {
+        var missing = new List<string>();
+
+        foreach (var rf in recipe.RecipeFermentables)
+        {
+            if (string.IsNullOrWhiteSpace(rf.Fermentable.BrewfatherId))
+            {
+                missing.Add($"fermentable '{rf.Fermentable.Name}'");
+            }
+        }
+
+        foreach (var rh in recipe.RecipeHops)
+        {
+            if (string.IsNullOrWhiteSpace(rh.Hop.BrewfatherId))
+            {
+                missing.Add($"hop '{rh.Hop.Name}'");
+            }
+        }
+
+        foreach (var ry in recipe.RecipeYeasts)
+        {
+            if (string.IsNullOrWhiteSpace(ry.Yeast.BrewfatherId))
+            {
+                missing.Add($"yeast '{ry.Yeast.Name}'");
+            }
+        }
+
+        foreach (var rm in recipe.RecipeMiscs)
+        {
+            if (string.IsNullOrWhiteSpace(rm.Misc.BrewfatherId))
+            {
+                missing.Add($"misc '{rm.Misc.Name}'");
+            }
+        }
+
+        return missing;
+    }
+
+    private static BrewfatherCreateRecipeRequest CreateBrewfatherRecipeRequest(Recipe recipe)
+    {
+        return new BrewfatherCreateRecipeRequest(
+            recipe.Name,
+            "All Grain",
+            recipe.RecipeFermentables.Select(rf => new BrewfatherRecipeFermentable(
+                rf.Fermentable.BrewfatherId!, // validated earlier
+                (double)rf.Amount,
+                rf.Fermentable.Name,
+                MapToBrewfatherFermentableType(rf.Fermentable.Type),
+                rf.Fermentable.Supplier,
+                rf.Fermentable.Origin,
+                rf.Fermentable.Color,
+                null
+            )).ToList(),
+            recipe.RecipeHops.Select(rh => new BrewfatherRecipeHop(
+                rh.Hop.BrewfatherId!, // validated earlier
+                (double)rh.Amount,
+                rh.Hop.Name,
+                rh.Hop.AlphaAcid,
+                MapToBrewfatherHopType(rh.Hop.Type),
+                rh.Hop.Origin,
+                "Boil",
+                60
+            )).ToList(),
+            recipe.RecipeMiscs.Select(rm => new BrewfatherRecipeMisc(
+                rm.Misc.BrewfatherId!, // validated earlier
+                (double)rm.Amount,
+                rm.Misc.Name,
+                MapToBrewfatherMiscType(rm.Misc.Type),
+                MapToBrewfatherMiscUnit(rm.Misc.Unit),
+                "Boil",
+                0
+            )).ToList(),
+            recipe.RecipeYeasts.Select(ry => new BrewfatherRecipeYeast(
+                ry.Yeast.BrewfatherId!, // validated earlier
+                (double)ry.Amount,
+                ry.Yeast.Name,
+                string.IsNullOrWhiteSpace(ry.Yeast.Labaratory) ? null : ry.Yeast.Labaratory,
+                MapToBrewfatherYeastType(ry.Yeast.Type),
+                MapToBrewfatherYeastForm(ry.Yeast.Form),
+                null,
+                "pkg"
+            )).ToList()
+        );
+    }
+
+    private static string MapToBrewfatherFermentableType(FermentableType type)
+    {
+        return type switch
+        {
+            FermentableType.Grain => "Grain",
+            FermentableType.Sugar => "Sugar",
+            FermentableType.LiquidExtract => "Extract",
+            FermentableType.DryExtract => "Dry Extract",
+            FermentableType.Adjunct => "Adjunct",
+            _ => "Other"
+        };
+    }
+
+    private static string MapToBrewfatherHopType(HopType type)
+    {
+        return type switch
+        {
+            HopType.Pellet => "Pellet",
+            HopType.Whole => "Whole",
+            HopType.Cryo => "Cryo",
+            HopType.CO2Extract => "Co2 Extract",
+            _ => "Pellet"
+        };
+    }
+
+    private static string MapToBrewfatherYeastType(YeastType type)
+    {
+        return type switch
+        {
+            YeastType.Ale => "Ale",
+            YeastType.Lager => "Lager",
+            YeastType.Hybrid => "Hybrid",
+            YeastType.Wheat => "Wheat",
+            YeastType.Wine => "Wine",
+            YeastType.Champagne => "Champagne",
+            _ => "Other"
+        };
+    }
+
+    private static string MapToBrewfatherYeastForm(YeastForm form)
+    {
+        return form switch
+        {
+            YeastForm.Dry => "Dry",
+            YeastForm.Liquid => "Liquid",
+            YeastForm.Slurry => "Slurry",
+            YeastForm.Culture => "Culture",
+            _ => "Liquid"
+        };
+    }
+
+    private static string MapToBrewfatherMiscType(MiscType type)
+    {
+        return type switch
+        {
+            MiscType.Spice => "Spice",
+            MiscType.Herb => "Herb",
+            MiscType.Fruit => "Fruit",
+            MiscType.Flavor => "Flavoring",
+            MiscType.Fining => "Fining",
+            MiscType.WaterAgent => "Water Agent",
+            _ => "Other"
+        };
+    }
+
+    private static string MapToBrewfatherMiscUnit(InventoryUnit unit)
+    {
+        return unit switch
+        {
+            InventoryUnit.Kilograms => "kg",
+            InventoryUnit.Liters => "l",
+            InventoryUnit.Milliliters => "ml",
+            InventoryUnit.Packages => "pkg",
+            InventoryUnit.Tablets => "items",
+            _ => "g"
+        };
+    }
+
     private FermentableType MapBrewfatherType(string? brewfatherType)
     {
         return brewfatherType?.ToLowerInvariant() switch

@@ -15,6 +15,9 @@ export class RecipeDetailsComponent implements OnInit {
   recipe: RecipeDetailsResponse | null = null;
   isLoading = false;
   error: string | null = null;
+  isSyncing = false;
+  syncSuccess: string | null = null;
+  syncError: string | null = null;
 
   constructor(
     private recipeService: RecipeService,
@@ -41,6 +44,27 @@ export class RecipeDetailsComponent implements OnInit {
         this.error = 'Failed to load recipe details';
         this.isLoading = false;
         console.error('Error loading recipe:', err);
+      }
+    });
+  }
+
+  syncToBrewfather(): void {
+    if (!this.recipe) return;
+
+    this.isSyncing = true;
+    this.syncSuccess = null;
+    this.syncError = null;
+
+    this.recipeService.syncRecipe(this.recipe.id).subscribe({
+      next: (data) => {
+        this.isSyncing = false;
+        this.syncSuccess = 'Recipe created in Brewfather.';
+        this.recipe!.brewfatherId = data.brewfatherId;
+      },
+      error: (err) => {
+        this.isSyncing = false;
+        this.syncError = err.error?.message || 'Failed to create recipe in Brewfather.';
+        console.error('Error syncing recipe to Brewfather:', err);
       }
     });
   }

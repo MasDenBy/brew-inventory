@@ -1,3 +1,5 @@
+using BrewInventory.App.Data.Entities;
+
 namespace BrewInventory.App.Services;
 
 public interface IBrewfatherSyncService
@@ -7,4 +9,5 @@ public interface IBrewfatherSyncService
     Task SyncYeastsAsync(CancellationToken cancellationToken = default);
     Task SyncMiscsAsync(CancellationToken cancellationToken = default);
     Task SyncRecipesAsync(CancellationToken cancellationToken = default);
+    Task<Recipe> PushRecipeToBrewfatherAsync(int recipeId, CancellationToken cancellationToken = default);
 }
