@@ -421,3 +421,7 @@ wwwroot
 /backend/BrewInventory.App/brewinventory.db
 /backend/BrewInventory.App/brewinventory.db-shm
 /backend/BrewInventory.App/brewinventory.db-wal
+
+# MCP server
+/mcp-server/dist/
+/mcp-server/node_modules/
