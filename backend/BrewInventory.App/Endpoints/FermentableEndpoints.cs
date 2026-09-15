@@ -1,8 +1,7 @@
-using BrewInventory.App.Data;
-using BrewInventory.App.Data.Entities;
-using BrewInventory.App.Models;
-using BrewInventory.App.Models.Contracts;
-using Microsoft.EntityFrameworkCore;
+using BrewInventory.Application.Contracts.Fermentables;
+using BrewInventory.Domain.Entities;
+using BrewInventory.Domain.Entities.Enums;
+using BrewInventory.Application.Repositories;
 
 namespace BrewInventory.App.Endpoints;
 
@@ -12,23 +11,26 @@ public static class FermentableEndpoints
     {
         var group = app.MapGroup("/api/fermentables");
 
-        group.MapGet("/", async (BrewInventoryContext db) =>
+        group.MapGet("/", async (IIngredientRepository repo, CancellationToken ct) =>
         {
-            var items = await db.Fermentables
-                .Select(f => new FermentableResponse(f.Id, f.Name, f.Amount, f.BestBefore, f.BrewfatherId, f.Supplier, f.Origin, f.Type.ToString(), f.Color))
-                .ToListAsync();
-            return Results.Ok(items);
+            var items = await repo.GetAllFermentablesAsync(ct);
+            var responses = items.Select(f => new FermentableResponse(
+                f.Id, f.Name, f.Amount, f.BestBefore, f.BrewfatherId,
+                f.Supplier, f.Origin, f.Type.ToString(), f.Color)).ToList();
+            return Results.Ok(responses);
         });
 
-        group.MapGet("/{id:int}", async (int id, BrewInventoryContext db) =>
+        group.MapGet("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
         {
-            var f = await db.Fermentables.FindAsync(id);
+            var f = await repo.GetFermentableByIdAsync(id, ct);
             return f is null
                 ? Results.NotFound()
-                : Results.Ok(new FermentableResponse(f.Id, f.Name, f.Amount, f.BestBefore, f.BrewfatherId, f.Supplier, f.Origin, f.Type.ToString(), f.Color));
+                : Results.Ok(new FermentableResponse(
+                    f.Id, f.Name, f.Amount, f.BestBefore, f.BrewfatherId,
+                    f.Supplier, f.Origin, f.Type.ToString(), f.Color));
         });
 
-        group.MapPost("/", async (CreateFermentableRequest req, BrewInventoryContext db) =>
+        group.MapPost("/", async (CreateFermentableRequest req, IIngredientRepository repo, CancellationToken ct) =>
         {
             var entity = new Fermentable
             {
@@ -40,19 +42,17 @@ public static class FermentableEndpoints
                 Origin = req.Origin,
                 Color = req.Color
             };
-            // Try parse enum if available
             if (Enum.TryParse(typeof(FermentableType), req.Type, true, out var ft)) entity.Type = (FermentableType)ft;
 
-            db.Fermentables.Add(entity);
-            await db.SaveChangesAsync();
+            await repo.AddFermentableAsync(entity, ct);
 
             var resp = new FermentableResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Supplier, entity.Origin, entity.Type.ToString(), entity.Color);
             return Results.Created($"/api/fermentables/{entity.Id}", resp);
         });
 
-        group.MapPut("/{id:int}", async (int id, UpdateFermentableRequest req, BrewInventoryContext db) =>
+        group.MapPut("/{id:int}", async (int id, UpdateFermentableRequest req, IIngredientRepository repo, CancellationToken ct) =>
         {
-            var entity = await db.Fermentables.FindAsync(id);
+            var entity = await repo.GetFermentableByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
             entity.Name = req.Name;
@@ -64,17 +64,16 @@ public static class FermentableEndpoints
             entity.Color = req.Color;
             if (Enum.TryParse(typeof(FermentableType), req.Type, true, out var ft)) entity.Type = (FermentableType)ft;
 
-            await db.SaveChangesAsync();
+            await repo.UpdateFermentableAsync(entity, ct);
             return Results.NoContent();
         });
 
-        group.MapDelete("/{id:int}", async (int id, BrewInventoryContext db) =>
+        group.MapDelete("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
         {
-            var entity = await db.Fermentables.FindAsync(id);
+            var entity = await repo.GetFermentableByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
-            db.Fermentables.Remove(entity);
-            await db.SaveChangesAsync();
+            await repo.DeleteFermentableAsync(entity, ct);
             return Results.NoContent();
         });
     }

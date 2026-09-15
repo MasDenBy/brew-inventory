@@ -8,6 +8,31 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 [*.cs]
+dotnet_diagnostic.CA1002.severity = error
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.MA0004.severity = none
+
+# Needs to be fixed in the codebase, but we don't want to block the build for now
+dotnet_diagnostic.MA0016.severity = warning
+dotnet_diagnostic.CA1848.severity = warning
+dotnet_diagnostic.CA1873.severity = warning
+dotnet_diagnostic.CA1062.severity = warning
+dotnet_diagnostic.MA0002.severity = warning
+dotnet_diagnostic.MA0051.severity = warning
+dotnet_diagnostic.S2139.severity = warning
+dotnet_diagnostic.S3267.severity = warning
+dotnet_diagnostic.CA2234.severity = warning
+dotnet_diagnostic.CA1869.severity = warning
+dotnet_diagnostic.CA1707.severity = warning
+dotnet_diagnostic.CA1308.severity = warning
+dotnet_diagnostic.CA1056.severity = warning
+dotnet_diagnostic.S1450.severity = warning
+dotnet_diagnostic.S4487.severity = warning
+dotnet_diagnostic.MA0048.severity = warning
+dotnet_diagnostic.CA1515.severity = warning
+dotnet_diagnostic.CA1031.severity = warning
+dotnet_diagnostic.S6966.severity = warning
+
 # Nullable reference types
 dotnet_diagnostic.CS8600.severity = error
 dotnet_diagnostic.CS8601.severity = error

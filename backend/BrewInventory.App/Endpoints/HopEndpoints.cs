@@ -1,8 +1,8 @@
-using BrewInventory.App.Data;
-using BrewInventory.App.Data.Entities;
-using BrewInventory.App.Models;
-using BrewInventory.App.Models.Contracts;
-using Microsoft.EntityFrameworkCore;
+using BrewInventory.App.Endpoints;
+using BrewInventory.Application.Contracts.Hops;
+using BrewInventory.Domain.Entities;
+using BrewInventory.Domain.Entities.Enums;
+using BrewInventory.Application.Repositories;
 
 namespace BrewInventory.App.Endpoints;
 
@@ -12,23 +12,26 @@ public static class HopEndpoints
     {
         var group = app.MapGroup("/api/hops");
 
-        group.MapGet("/", async (BrewInventoryContext db) =>
+        group.MapGet("/", async (IIngredientRepository repo, CancellationToken ct) =>
         {
-            var items = await db.Hops
-                .Select(h => new HopResponse(h.Id, h.Name, h.Amount, h.BestBefore, h.BrewfatherId, h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear))
-                .ToListAsync();
-            return Results.Ok(items);
+            var items = await repo.GetAllHopsAsync(ct);
+            var responses = items.Select(h => new HopResponse(
+                h.Id, h.Name, h.Amount, h.BestBefore, h.BrewfatherId,
+                h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear)).ToList();
+            return Results.Ok(responses);
         });
 
-        group.MapGet("/{id:int}", async (int id, BrewInventoryContext db) =>
+        group.MapGet("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
         {
-            var h = await db.Hops.FindAsync(id);
+            var h = await repo.GetHopByIdAsync(id, ct);
             return h is null
                 ? Results.NotFound()
-                : Results.Ok(new HopResponse(h.Id, h.Name, h.Amount, h.BestBefore, h.BrewfatherId, h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear));
+                : Results.Ok(new HopResponse(
+                    h.Id, h.Name, h.Amount, h.BestBefore, h.BrewfatherId,
+                    h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear));
         });
 
-        group.MapPost("/", async (CreateHopRequest req, BrewInventoryContext db) =>
+        group.MapPost("/", async (CreateHopRequest req, IIngredientRepository repo, CancellationToken ct) =>
         {
             var entity = new Hop
             {
@@ -42,16 +45,15 @@ public static class HopEndpoints
             };
             if (Enum.TryParse(typeof(HopType), req.Type, true, out var ht)) entity.Type = (HopType)ht;
 
-            db.Hops.Add(entity);
-            await db.SaveChangesAsync();
+            await repo.AddHopAsync(entity, ct);
 
             var resp = new HopResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Origin, entity.Type.ToString(), entity.AlphaAcid, entity.HarvestYear);
             return Results.Created($"/api/hops/{entity.Id}", resp);
         });
 
-        group.MapPut("/{id:int}", async (int id, UpdateHopRequest req, BrewInventoryContext db) =>
+        group.MapPut("/{id:int}", async (int id, UpdateHopRequest req, IIngredientRepository repo, CancellationToken ct) =>
         {
-            var entity = await db.Hops.FindAsync(id);
+            var entity = await repo.GetHopByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
             entity.Name = req.Name;
@@ -63,17 +65,16 @@ public static class HopEndpoints
             entity.HarvestYear = req.HarvestYear;
             if (Enum.TryParse(typeof(HopType), req.Type, true, out var ht)) entity.Type = (HopType)ht;
 
-            await db.SaveChangesAsync();
+            await repo.UpdateHopAsync(entity, ct);
             return Results.NoContent();
         });
 
-        group.MapDelete("/{id:int}", async (int id, BrewInventoryContext db) =>
+        group.MapDelete("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
         {
-            var entity = await db.Hops.FindAsync(id);
+            var entity = await repo.GetHopByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
-            db.Hops.Remove(entity);
-            await db.SaveChangesAsync();
+            await repo.DeleteHopAsync(entity, ct);
             return Results.NoContent();
         });
     }

@@ -1,7 +1,11 @@
-using BrewInventory.App.Data;
+using BrewInventory.Infrastructure.Brewfather;
+using BrewInventory.Infrastructure.Brewfather.Settings;
+using BrewInventory.Infrastructure.Persistence;
+using BrewInventory.Infrastructure.Persistence.Repositories;
+using BrewInventory.Infrastructure.Services;
+using BrewInventory.Application.Repositories;
+using BrewInventory.Application.Services;
 using BrewInventory.App.Endpoints;
-using BrewInventory.App.Models;
-using BrewInventory.App.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
@@ -15,6 +19,11 @@ builder.Services.Configure<BrewfatherSettings>(
 builder.Services.AddHttpClient<IBrewfatherClient, BrewfatherClient>();
 builder.Services.AddScoped<IBrewfatherSyncService, BrewfatherSyncService>();
 
+builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+builder.Services.AddScoped<IIngredientPurchaseService, IngredientPurchaseService>();
+builder.Services.AddScoped<IExcelExporter, ExcelExporter>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularDev", policy =>
@@ -27,15 +36,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Apply any pending database migrations on startup.
-// Safe to run on every start; necessary to provision the schema on a fresh volume.
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<BrewInventoryContext>();
-    dbContext.Database.Migrate();
+    await dbContext.Database.MigrateAsync();
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -77,4 +83,4 @@ app.MapRecipeEndpoints();
 app.MapSyncEndpoints();
 app.MapIngredientPurchaseEndpoints();
 
-app.Run();
+await app.RunAsync();

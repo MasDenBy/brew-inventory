@@ -1,8 +1,8 @@
-using BrewInventory.App.Services;
+using BrewInventory.Infrastructure.Brewfather;
 
 namespace BrewInventory.App.Endpoints;
 
-public static class SyncEndpoints
+internal static class SyncEndpoints
 {
     public static void MapSyncEndpoints(this WebApplication app)
     {

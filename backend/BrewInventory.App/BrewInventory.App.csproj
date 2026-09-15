@@ -8,15 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
+    <Compile Remove="Data\**" />
+    <Content Remove="Data\**" />
+    <EmbeddedResource Remove="Data\**" />
+    <None Remove="Data\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Migrations\" />
+    <ProjectReference Include="..\BrewInventory.Domain\BrewInventory.Domain.csproj" />
+    <ProjectReference Include="..\BrewInventory.Application\BrewInventory.Application.csproj" />
+    <ProjectReference Include="..\BrewInventory.Infrastructure\BrewInventory.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
