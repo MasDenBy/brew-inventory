@@ -19,7 +19,10 @@ builder.Services.Configure<BrewfatherSettings>(
 builder.Services.AddHttpClient<IBrewfatherClient, BrewfatherClient>();
 builder.Services.AddScoped<IBrewfatherSyncService, BrewfatherSyncService>();
 
-builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
+builder.Services.AddScoped<IFermentableRepository, FermentableRepository>();
+builder.Services.AddScoped<IHopRepository, HopRepository>();
+builder.Services.AddScoped<IYeastRepository, YeastRepository>();
+builder.Services.AddScoped<IMiscRepository, MiscRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IIngredientPurchaseService, IngredientPurchaseService>();
 builder.Services.AddScoped<IExcelExporter, ExcelExporter>();

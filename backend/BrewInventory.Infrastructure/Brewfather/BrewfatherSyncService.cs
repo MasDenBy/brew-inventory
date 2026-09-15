@@ -10,20 +10,17 @@ namespace BrewInventory.Infrastructure.Brewfather;
 public class BrewfatherSyncService : IBrewfatherSyncService
 {
     private readonly IBrewfatherClient _brewfatherClient;
-    private readonly IIngredientRepository _ingredientRepository;
     private readonly IRecipeRepository _recipeRepository;
     private readonly Persistence.BrewInventoryContext _dbContext;
     private readonly ILogger<BrewfatherSyncService> _logger;
 
     public BrewfatherSyncService(
         IBrewfatherClient brewfatherClient,
-        IIngredientRepository ingredientRepository,
         IRecipeRepository recipeRepository,
         Persistence.BrewInventoryContext dbContext,
         ILogger<BrewfatherSyncService> logger)
     {
         _brewfatherClient = brewfatherClient;
-        _ingredientRepository = ingredientRepository;
         _recipeRepository = recipeRepository;
         _dbContext = dbContext;
         _logger = logger;

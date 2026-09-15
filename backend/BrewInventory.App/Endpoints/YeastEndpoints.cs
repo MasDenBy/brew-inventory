@@ -11,18 +11,18 @@ internal static class YeastEndpoints
     {
         var group = app.MapGroup("/api/yeasts");
 
-        group.MapGet("/", async (IIngredientRepository repo, CancellationToken ct) =>
+        group.MapGet("/", async (IYeastRepository repo, CancellationToken ct) =>
         {
-            var items = await repo.GetAllYeastsAsync(ct);
+            var items = await repo.GetAllAsync(ct);
             var responses = items.Select(y => new YeastResponse(
                 y.Id, y.Name, y.Amount, y.BestBefore, y.BrewfatherId,
                 y.Labaratory, y.Type.ToString(), y.Form.ToString())).ToList();
             return Results.Ok(responses);
         });
 
-        group.MapGet("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:int}", async (int id, IYeastRepository repo, CancellationToken ct) =>
         {
-            var y = await repo.GetYeastByIdAsync(id, ct);
+            var y = await repo.GetByIdAsync(id, ct);
             return y is null
                 ? Results.NotFound()
                 : Results.Ok(new YeastResponse(
@@ -30,7 +30,7 @@ internal static class YeastEndpoints
                     y.Labaratory, y.Type.ToString(), y.Form.ToString()));
         });
 
-        group.MapPost("/", async (CreateYeastRequest req, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapPost("/", async (CreateYeastRequest req, IYeastRepository repo, CancellationToken ct) =>
         {
             var entity = new Yeast
             {
@@ -43,15 +43,15 @@ internal static class YeastEndpoints
             if (Enum.TryParse(typeof(YeastType), req.Type, true, out var yt)) entity.Type = (YeastType)yt;
             if (Enum.TryParse(typeof(YeastForm), req.Form, true, out var yf)) entity.Form = (YeastForm)yf;
 
-            await repo.AddYeastAsync(entity, ct);
+            await repo.AddAsync(entity, ct);
 
             var resp = new YeastResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Labaratory, entity.Type.ToString(), entity.Form.ToString());
             return Results.Created($"/api/yeasts/{entity.Id}", resp);
         });
 
-        group.MapPut("/{id:int}", async (int id, UpdateYeastRequest req, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapPut("/{id:int}", async (int id, UpdateYeastRequest req, IYeastRepository repo, CancellationToken ct) =>
         {
-            var entity = await repo.GetYeastByIdAsync(id, ct);
+            var entity = await repo.GetByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
             entity.Name = req.Name;
@@ -62,16 +62,16 @@ internal static class YeastEndpoints
             if (Enum.TryParse(typeof(YeastType), req.Type, true, out var yt)) entity.Type = (YeastType)yt;
             if (Enum.TryParse(typeof(YeastForm), req.Form, true, out var yf)) entity.Form = (YeastForm)yf;
 
-            await repo.UpdateYeastAsync(entity, ct);
+            await repo.UpdateAsync(entity, ct);
             return Results.NoContent();
         });
 
-        group.MapDelete("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapDelete("/{id:int}", async (int id, IYeastRepository repo, CancellationToken ct) =>
         {
-            var entity = await repo.GetYeastByIdAsync(id, ct);
+            var entity = await repo.GetByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
-            await repo.DeleteYeastAsync(entity, ct);
+            await repo.DeleteAsync(entity, ct);
             return Results.NoContent();
         });
     }

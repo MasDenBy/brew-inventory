@@ -12,18 +12,18 @@ public static class HopEndpoints
     {
         var group = app.MapGroup("/api/hops");
 
-        group.MapGet("/", async (IIngredientRepository repo, CancellationToken ct) =>
+        group.MapGet("/", async (IHopRepository repo, CancellationToken ct) =>
         {
-            var items = await repo.GetAllHopsAsync(ct);
+            var items = await repo.GetAllAsync(ct);
             var responses = items.Select(h => new HopResponse(
                 h.Id, h.Name, h.Amount, h.BestBefore, h.BrewfatherId,
                 h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear)).ToList();
             return Results.Ok(responses);
         });
 
-        group.MapGet("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:int}", async (int id, IHopRepository repo, CancellationToken ct) =>
         {
-            var h = await repo.GetHopByIdAsync(id, ct);
+            var h = await repo.GetByIdAsync(id, ct);
             return h is null
                 ? Results.NotFound()
                 : Results.Ok(new HopResponse(
@@ -31,7 +31,7 @@ public static class HopEndpoints
                     h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear));
         });
 
-        group.MapPost("/", async (CreateHopRequest req, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapPost("/", async (CreateHopRequest req, IHopRepository repo, CancellationToken ct) =>
         {
             var entity = new Hop
             {
@@ -45,15 +45,15 @@ public static class HopEndpoints
             };
             if (Enum.TryParse(typeof(HopType), req.Type, true, out var ht)) entity.Type = (HopType)ht;
 
-            await repo.AddHopAsync(entity, ct);
+            await repo.AddAsync(entity, ct);
 
             var resp = new HopResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Origin, entity.Type.ToString(), entity.AlphaAcid, entity.HarvestYear);
             return Results.Created($"/api/hops/{entity.Id}", resp);
         });
 
-        group.MapPut("/{id:int}", async (int id, UpdateHopRequest req, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapPut("/{id:int}", async (int id, UpdateHopRequest req, IHopRepository repo, CancellationToken ct) =>
         {
-            var entity = await repo.GetHopByIdAsync(id, ct);
+            var entity = await repo.GetByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
             entity.Name = req.Name;
@@ -65,16 +65,16 @@ public static class HopEndpoints
             entity.HarvestYear = req.HarvestYear;
             if (Enum.TryParse(typeof(HopType), req.Type, true, out var ht)) entity.Type = (HopType)ht;
 
-            await repo.UpdateHopAsync(entity, ct);
+            await repo.UpdateAsync(entity, ct);
             return Results.NoContent();
         });
 
-        group.MapDelete("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapDelete("/{id:int}", async (int id, IHopRepository repo, CancellationToken ct) =>
         {
-            var entity = await repo.GetHopByIdAsync(id, ct);
+            var entity = await repo.GetByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
-            await repo.DeleteHopAsync(entity, ct);
+            await repo.DeleteAsync(entity, ct);
             return Results.NoContent();
         });
     }

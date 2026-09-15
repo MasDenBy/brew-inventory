@@ -11,18 +11,18 @@ public static class FermentableEndpoints
     {
         var group = app.MapGroup("/api/fermentables");
 
-        group.MapGet("/", async (IIngredientRepository repo, CancellationToken ct) =>
+        group.MapGet("/", async (IFermentableRepository repo, CancellationToken ct) =>
         {
-            var items = await repo.GetAllFermentablesAsync(ct);
+            var items = await repo.GetAllAsync(ct);
             var responses = items.Select(f => new FermentableResponse(
                 f.Id, f.Name, f.Amount, f.BestBefore, f.BrewfatherId,
                 f.Supplier, f.Origin, f.Type.ToString(), f.Color)).ToList();
             return Results.Ok(responses);
         });
 
-        group.MapGet("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapGet("/{id:int}", async (int id, IFermentableRepository repo, CancellationToken ct) =>
         {
-            var f = await repo.GetFermentableByIdAsync(id, ct);
+            var f = await repo.GetByIdAsync(id, ct);
             return f is null
                 ? Results.NotFound()
                 : Results.Ok(new FermentableResponse(
@@ -30,7 +30,7 @@ public static class FermentableEndpoints
                     f.Supplier, f.Origin, f.Type.ToString(), f.Color));
         });
 
-        group.MapPost("/", async (CreateFermentableRequest req, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapPost("/", async (CreateFermentableRequest req, IFermentableRepository repo, CancellationToken ct) =>
         {
             var entity = new Fermentable
             {
@@ -44,15 +44,15 @@ public static class FermentableEndpoints
             };
             if (Enum.TryParse(typeof(FermentableType), req.Type, true, out var ft)) entity.Type = (FermentableType)ft;
 
-            await repo.AddFermentableAsync(entity, ct);
+            await repo.AddAsync(entity, ct);
 
             var resp = new FermentableResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Supplier, entity.Origin, entity.Type.ToString(), entity.Color);
             return Results.Created($"/api/fermentables/{entity.Id}", resp);
         });
 
-        group.MapPut("/{id:int}", async (int id, UpdateFermentableRequest req, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapPut("/{id:int}", async (int id, UpdateFermentableRequest req, IFermentableRepository repo, CancellationToken ct) =>
         {
-            var entity = await repo.GetFermentableByIdAsync(id, ct);
+            var entity = await repo.GetByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
             entity.Name = req.Name;
@@ -64,16 +64,16 @@ public static class FermentableEndpoints
             entity.Color = req.Color;
             if (Enum.TryParse(typeof(FermentableType), req.Type, true, out var ft)) entity.Type = (FermentableType)ft;
 
-            await repo.UpdateFermentableAsync(entity, ct);
+            await repo.UpdateAsync(entity, ct);
             return Results.NoContent();
         });
 
-        group.MapDelete("/{id:int}", async (int id, IIngredientRepository repo, CancellationToken ct) =>
+        group.MapDelete("/{id:int}", async (int id, IFermentableRepository repo, CancellationToken ct) =>
         {
-            var entity = await repo.GetFermentableByIdAsync(id, ct);
+            var entity = await repo.GetByIdAsync(id, ct);
             if (entity is null) return Results.NotFound();
 
-            await repo.DeleteFermentableAsync(entity, ct);
+            await repo.DeleteAsync(entity, ct);
             return Results.NoContent();
         });
     }
