@@ -1,39 +1,71 @@
-using BrewInventory.App.Data;
-using BrewInventory.App.Data.Entities;
-using BrewInventory.App.Models.Contracts;
-using BrewInventory.App.Services;
-using Microsoft.EntityFrameworkCore;
+using BrewInventory.Application.Contracts.Recipes;
+using BrewInventory.Application.Repositories;
+using BrewInventory.Domain.Entities;
+using BrewInventory.Infrastructure.Brewfather;
 
 namespace BrewInventory.App.Endpoints;
 
-public static class RecipeEndpoints
+internal static class RecipeEndpoints
 {
     public static void MapRecipeEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/recipes");
 
-        group.MapGet("/", async (BrewInventoryContext db) =>
+        group.MapGet("/", async (IRecipeRepository repo, CancellationToken ct) =>
         {
-            var recipes = await db.Recipes
-                .Select(r => new RecipeListResponse(
-                    r.Id,
-                    r.Name,
-                    r.BrewfatherId))
-                .ToListAsync();
-
-            return Results.Ok(recipes);
+            var recipes = await repo.GetAllAsync(ct);
+            var responses = recipes.Select(r => new RecipeListResponse(r.Id, r.Name, r.BrewfatherId)).ToList();
+            return Results.Ok(responses);
         });
 
-        group.MapGet("/{id:int}", async (int id, BrewInventoryContext db, CancellationToken ct) =>
+        group.MapGet("/{id:int}", async (int id, IRecipeRepository repo, CancellationToken ct) =>
         {
-            var recipe = await LoadRecipeDetails(db, id, ct);
+            var recipe = await repo.GetByIdAsync(id, ct);
+            if (recipe is null) return Results.NotFound();
 
-            return recipe is null
-                ? Results.NotFound()
-                : Results.Ok(recipe);
+            var response = new RecipeDetailsResponse(
+                recipe.Id,
+                recipe.Name,
+                recipe.BrewfatherId,
+                recipe.RecipeFermentables.Select(rf => new RecipeFermentableDetail(
+                    rf.Fermentable.Id,
+                    rf.Fermentable.Name,
+                    rf.Fermentable.Type.ToString(),
+                    rf.Amount,
+                    rf.Fermentable.Supplier,
+                    rf.Fermentable.Origin,
+                    rf.Fermentable.Color
+                )).ToList(),
+                recipe.RecipeHops.Select(rh => new RecipeHopDetail(
+                    rh.Hop.Id,
+                    rh.Hop.Name,
+                    rh.Hop.Type.ToString(),
+                    rh.Amount,
+                    rh.Hop.Origin,
+                    rh.Hop.AlphaAcid,
+                    rh.Hop.HarvestYear
+                )).ToList(),
+                recipe.RecipeYeasts.Select(ry => new RecipeYeastDetail(
+                    ry.Yeast.Id,
+                    ry.Yeast.Name,
+                    ry.Yeast.Type.ToString(),
+                    ry.Yeast.Form.ToString(),
+                    ry.Amount,
+                    ry.Yeast.Labaratory
+                )).ToList(),
+                recipe.RecipeMiscs.Select(rm => new RecipeMiscDetail(
+                    rm.Misc.Id,
+                    rm.Misc.Name,
+                    rm.Misc.Type.ToString(),
+                    rm.Misc.Unit.ToString(),
+                    rm.Amount
+                )).ToList()
+            );
+
+            return Results.Ok(response);
         });
 
-        group.MapPost("/", async (CreateRecipeRequest req, BrewInventoryContext db, CancellationToken ct) =>
+        group.MapPost("/", async (CreateRecipeRequest req, IRecipeRepository repo, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(req.Name))
             {
@@ -45,8 +77,7 @@ public static class RecipeEndpoints
             var yeasts = req.Yeasts ?? [];
             var miscs = req.Miscs ?? [];
 
-            var missingIds = await FindMissingIngredientIds(
-                db, fermentables, hops, yeasts, miscs, ct);
+            var missingIds = await FindMissingIngredientIdsAsync(repo, fermentables, hops, yeasts, miscs, ct);
             if (missingIds.Count > 0)
             {
                 return Results.BadRequest(new
@@ -94,10 +125,9 @@ public static class RecipeEndpoints
                 });
             }
 
-            db.Recipes.Add(recipe);
-            await db.SaveChangesAsync(ct);
+            await repo.AddAsync(recipe, ct);
 
-            var details = await LoadRecipeDetails(db, recipe.Id, ct);
+            var details = await repo.GetByIdAsync(recipe.Id, ct);
             return Results.Created($"/api/recipes/{recipe.Id}", details);
         });
 
@@ -119,12 +149,12 @@ public static class RecipeEndpoints
         });
     }
 
-    private static async Task<List<string>> FindMissingIngredientIds(
-        BrewInventoryContext db,
-        List<CreateRecipeFermentableRequest> fermentables,
-        List<CreateRecipeHopRequest> hops,
-        List<CreateRecipeYeastRequest> yeasts,
-        List<CreateRecipeMiscRequest> miscs,
+    private static async Task<List<string>> FindMissingIngredientIdsAsync(
+        IRecipeRepository repo,
+        ICollection<CreateRecipeFermentableRequest> fermentables,
+        ICollection<CreateRecipeHopRequest> hops,
+        ICollection<CreateRecipeYeastRequest> yeasts,
+        ICollection<CreateRecipeMiscRequest> miscs,
         CancellationToken ct)
     {
         var missing = new List<string>();
@@ -132,96 +162,31 @@ public static class RecipeEndpoints
         var fermentableIds = fermentables.Select(f => f.FermentableId).Distinct().ToList();
         if (fermentableIds.Count > 0)
         {
-            var foundIds = await db.Fermentables
-                .Where(f => fermentableIds.Contains(f.Id))
-                .Select(f => f.Id)
-                .ToListAsync(ct);
+            var foundIds = await repo.GetExistingFermentableIdsAsync(fermentableIds, ct);
             missing.AddRange(fermentableIds.Except(foundIds).Select(id => $"Fermentable {id}"));
         }
 
         var hopIds = hops.Select(h => h.HopId).Distinct().ToList();
         if (hopIds.Count > 0)
         {
-            var foundIds = await db.Hops
-                .Where(h => hopIds.Contains(h.Id))
-                .Select(h => h.Id)
-                .ToListAsync(ct);
+            var foundIds = await repo.GetExistingHopIdsAsync(hopIds, ct);
             missing.AddRange(hopIds.Except(foundIds).Select(id => $"Hop {id}"));
         }
 
         var yeastIds = yeasts.Select(y => y.YeastId).Distinct().ToList();
         if (yeastIds.Count > 0)
         {
-            var foundIds = await db.Yeasts
-                .Where(y => yeastIds.Contains(y.Id))
-                .Select(y => y.Id)
-                .ToListAsync(ct);
+            var foundIds = await repo.GetExistingYeastIdsAsync(yeastIds, ct);
             missing.AddRange(yeastIds.Except(foundIds).Select(id => $"Yeast {id}"));
         }
 
         var miscIds = miscs.Select(m => m.MiscId).Distinct().ToList();
         if (miscIds.Count > 0)
         {
-            var foundIds = await db.Miscs
-                .Where(m => miscIds.Contains(m.Id))
-                .Select(m => m.Id)
-                .ToListAsync(ct);
+            var foundIds = await repo.GetExistingMiscIdsAsync(miscIds, ct);
             missing.AddRange(miscIds.Except(foundIds).Select(id => $"Misc {id}"));
         }
 
         return missing;
-    }
-
-    private static async Task<RecipeDetailsResponse?> LoadRecipeDetails(BrewInventoryContext db, int id, CancellationToken ct = default)
-    {
-        return await db.Recipes
-            .Include(r => r.RecipeFermentables)
-                .ThenInclude(rf => rf.Fermentable)
-            .Include(r => r.RecipeHops)
-                .ThenInclude(rh => rh.Hop)
-            .Include(r => r.RecipeYeasts)
-                .ThenInclude(ry => ry.Yeast)
-            .Include(r => r.RecipeMiscs)
-                .ThenInclude(rm => rm.Misc)
-            .Where(r => r.Id == id)
-            .Select(r => new RecipeDetailsResponse(
-                r.Id,
-                r.Name,
-                r.BrewfatherId,
-                r.RecipeFermentables.Select(rf => new RecipeFermentableDetail(
-                    rf.Fermentable.Id,
-                    rf.Fermentable.Name,
-                    rf.Fermentable.Type.ToString(),
-                    rf.Amount,
-                    rf.Fermentable.Supplier,
-                    rf.Fermentable.Origin,
-                    rf.Fermentable.Color
-                )).ToList(),
-                r.RecipeHops.Select(rh => new RecipeHopDetail(
-                    rh.Hop.Id,
-                    rh.Hop.Name,
-                    rh.Hop.Type.ToString(),
-                    rh.Amount,
-                    rh.Hop.Origin,
-                    rh.Hop.AlphaAcid,
-                    rh.Hop.HarvestYear
-                )).ToList(),
-                r.RecipeYeasts.Select(ry => new RecipeYeastDetail(
-                    ry.Yeast.Id,
-                    ry.Yeast.Name,
-                    ry.Yeast.Type.ToString(),
-                    ry.Yeast.Form.ToString(),
-                    ry.Amount,
-                    ry.Yeast.Labaratory
-                )).ToList(),
-                r.RecipeMiscs.Select(rm => new RecipeMiscDetail(
-                    rm.Misc.Id,
-                    rm.Misc.Name,
-                    rm.Misc.Type.ToString(),
-                    rm.Misc.Unit.ToString(),
-                    rm.Amount
-                )).ToList()
-            ))
-            .FirstOrDefaultAsync(ct);
     }
 }
