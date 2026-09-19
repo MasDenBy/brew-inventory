@@ -9,5 +9,5 @@ public class RecipeYeast
     public int YeastId { get; set; }
     public Yeast Yeast { get; set; } = null!;
 
-    public decimal Amount { get; set; }
+    public double Amount { get; set; }
 }

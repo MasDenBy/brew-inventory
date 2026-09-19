@@ -9,5 +9,5 @@ public class RecipeFermentable
     public int FermentableId { get; set; }
     public Fermentable Fermentable { get; set; } = null!;
 
-    public decimal Amount { get; set; }
+    public double Amount { get; set; }
 }

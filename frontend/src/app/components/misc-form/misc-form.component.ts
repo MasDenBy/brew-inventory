@@ -67,7 +67,6 @@ export class MiscFormComponent implements OnInit {
       type: [MiscType.Spice, Validators.required],
       unit: [InventoryUnit.Grams, Validators.required],
       amount: [0, [Validators.required, Validators.min(0)]],
-      bestBefore: [''],
       brewfatherId: ['']
     });
   }
@@ -80,7 +79,6 @@ export class MiscFormComponent implements OnInit {
           type: misc.type,
           unit: misc.unit,
           amount: misc.amount,
-          bestBefore: misc.bestBefore || '',
           brewfatherId: misc.brewfatherId || ''
         });
       },
@@ -103,7 +101,6 @@ export class MiscFormComponent implements OnInit {
         type: +formValue.type,
         unit: +formValue.unit,
         amount: formValue.amount,
-        bestBefore: formValue.bestBefore || null,
         brewfatherId: formValue.brewfatherId || null
       };
 

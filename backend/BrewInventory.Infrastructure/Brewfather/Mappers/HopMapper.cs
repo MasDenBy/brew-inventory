@@ -9,19 +9,18 @@ public static class HopMapper
     public static Hop ToEntity(BrewfatherHop bf) => new()
     {
         Name = bf.name,
-        Amount = (decimal)bf.inventory,
+        Amount = bf.inventory,
         BrewfatherId = bf._id,
         AlphaAcid = bf.alpha,
         Type = FromBrewfatherType(bf.type),
         Origin = null,
-        HarvestYear = null,
-        BestBefore = null
+        HarvestYear = null
     };
 
     public static void UpdateEntity(Hop existing, BrewfatherHop bf)
     {
         existing.Name = bf.name;
-        existing.Amount = (decimal)bf.inventory;
+        existing.Amount = bf.inventory;
         existing.AlphaAcid = bf.alpha;
         existing.Type = FromBrewfatherType(bf.type);
     }
@@ -43,8 +42,7 @@ public static class HopMapper
         AlphaAcid = bf.alpha ?? 0,
         Type = FromBrewfatherType(bf.type),
         Origin = string.IsNullOrWhiteSpace(bf.origin) ? null : bf.origin,
-        HarvestYear = null,
-        BestBefore = null
+        HarvestYear = null
     };
 
     public static HopType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToLowerInvariant() switch

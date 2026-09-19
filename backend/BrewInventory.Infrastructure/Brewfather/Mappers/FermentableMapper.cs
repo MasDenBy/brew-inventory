@@ -6,24 +6,39 @@ namespace BrewInventory.Infrastructure.Brewfather.Mappers;
 
 public static class FermentableMapper
 {
-    public static Fermentable ToEntity(BrewfatherFermentable bf) => new()
+    public static Fermentable ToEntity(BrewfatherFermentable bf)
     {
-        Name = bf.name,
-        Amount = (decimal)bf.inventory,
-        BrewfatherId = bf._id,
-        Supplier = string.IsNullOrWhiteSpace(bf.supplier) ? null : bf.supplier,
-        Type = FromBrewfatherType(bf.type),
-        Color = 0,
-        Origin = null,
-        BestBefore = null
-    };
+        ArgumentNullException.ThrowIfNull(bf);
+
+        return new()
+        {
+            Name = bf.Name,
+            Amount = bf.Inventory ?? 0,
+            BrewfatherId = bf.Id,
+            Supplier = bf.Supplier,
+            Origin = bf.Origin,
+            Type = bf.Type,
+            Color = bf.Color,
+            GrainCategory = bf.GrainCategory,
+            Percentage = bf.Percentage,
+            Lovibond = bf.Lovibond
+        };
+    }
 
     public static void UpdateEntity(Fermentable existing, BrewfatherFermentable bf)
     {
-        existing.Name = bf.name;
-        existing.Amount = (decimal)bf.inventory;
-        existing.Supplier = string.IsNullOrWhiteSpace(bf.supplier) ? null : bf.supplier;
-        existing.Type = FromBrewfatherType(bf.type);
+        ArgumentNullException.ThrowIfNull(existing);
+        ArgumentNullException.ThrowIfNull(bf);
+
+        existing.Name = bf.Name;
+        existing.Amount = bf.Inventory ?? 0;
+        existing.Supplier = bf.Supplier;
+        existing.Origin = bf.Origin;
+        existing.Type = bf.Type;
+        existing.Color = bf.Color;
+        existing.GrainCategory = bf.GrainCategory;
+        existing.Percentage = bf.Percentage;
+        existing.Lovibond = bf.Lovibond;
     }
 
     public static string ToBrewfatherType(FermentableType type) => type switch
@@ -41,11 +56,10 @@ public static class FermentableMapper
         Name = bf.name,
         Amount = 0,
         BrewfatherId = bf._id,
-        Supplier = string.IsNullOrWhiteSpace(bf.supplier) ? null : bf.supplier,
-        Origin = string.IsNullOrWhiteSpace(bf.origin) ? null : bf.origin,
+        Supplier = bf.supplier,
+        Origin = bf.origin,
         Type = FromBrewfatherType(bf.type),
-        Color = bf.color ?? 0,
-        BestBefore = null
+        Color = bf.color ?? 0
     };
 
     public static FermentableType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToLowerInvariant() switch

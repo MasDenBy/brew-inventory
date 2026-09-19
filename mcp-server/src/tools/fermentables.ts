@@ -6,12 +6,14 @@ interface Fermentable {
   id: number;
   name: string;
   amount: number;
-  bestBefore: string | null;
   brewfatherId: string | null;
   supplier: string | null;
   origin: string | null;
   type: string;
   color: number;
+  grainCategory: string | null;
+  percentage: number | null;
+  lovibond: number;
 }
 
 export function registerFermentableTools(server: McpServer) {
@@ -30,7 +32,7 @@ export function registerFermentableTools(server: McpServer) {
           : items
               .map(
                 (f) =>
-                  `- [#${f.id}] ${f.name} | Amount: ${f.amount} | Type: ${f.type} | Color: ${f.color} | Supplier: ${f.supplier || "-"} | Origin: ${f.origin || "-"}`,
+                  `- [#${f.id}] ${f.name} | Amount: ${f.amount} | Type: ${f.type} | Color: ${f.color} | Lovibond: ${f.lovibond} | Category: ${f.grainCategory || "-"} | Percentage: ${f.percentage != null ? f.percentage + "%" : "-"} | Supplier: ${f.supplier || "-"} | Origin: ${f.origin || "-"}`,
               )
               .join("\n");
       return { content: [{ type: "text", text }] };
@@ -49,9 +51,11 @@ export function registerFermentableTools(server: McpServer) {
 Amount: ${f.amount}
 Type: ${f.type}
 Color: ${f.color}
+Lovibond: ${f.lovibond}
+Grain Category: ${f.grainCategory || "-"}
+Percentage: ${f.percentage != null ? f.percentage + "%" : "-"}
 Supplier: ${f.supplier || "-"}
-Origin: ${f.origin || "-"}
-BestBefore: ${f.bestBefore || "-"}`;
+Origin: ${f.origin || "-"}`;
       return { content: [{ type: "text", text }] };
     },
   );
@@ -66,9 +70,11 @@ BestBefore: ${f.bestBefore || "-"}`;
         amount: z.number().nonnegative(),
         type: z.string(),
         color: z.number().nonnegative().default(0),
+        lovibond: z.number().nonnegative().default(0),
+        grainCategory: z.string().optional().nullable(),
+        percentage: z.number().int().nonnegative().optional().nullable(),
         supplier: z.string().optional().nullable(),
         origin: z.string().optional().nullable(),
-        bestBefore: z.string().optional().nullable(),
       }),
     },
     async (input) => {
@@ -77,9 +83,11 @@ BestBefore: ${f.bestBefore || "-"}`;
         amount: input.amount,
         type: input.type,
         color: input.color,
+        lovibond: input.lovibond,
+        grainCategory: input.grainCategory ?? null,
+        percentage: input.percentage ?? null,
         supplier: input.supplier ?? null,
         origin: input.origin ?? null,
-        bestBefore: input.bestBefore ?? null,
         brewfatherId: null,
       });
       const text = `Created fermentable [#${created.id}] ${created.name} with amount ${created.amount} ${created.type}.`;

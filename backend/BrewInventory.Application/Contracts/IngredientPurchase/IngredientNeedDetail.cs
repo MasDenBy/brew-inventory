@@ -4,7 +4,7 @@ public record IngredientNeedDetail(
     int IngredientId,
     string Name,
     string Type,
-    decimal AmountNeeded,
-    decimal AmountInInventory,
-    decimal AmountToBuy,
+    double AmountNeeded,
+    double AmountInInventory,
+    double AmountToBuy,
     string? Unit);

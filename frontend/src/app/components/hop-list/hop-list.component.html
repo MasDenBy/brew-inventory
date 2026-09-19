@@ -23,7 +23,6 @@
           <th>Alpha Acid (%)</th>
           <th>Harvest Year</th>
           <th>Amount (g)</th>
-          <th>Best Before</th>
           <th class="actions-column">Actions</th>
         </tr>
       </thead>
@@ -44,7 +43,6 @@
           <td class="amount-cell">
             <span class="amount-badge">{{ hop.amount }}</span>
           </td>
-          <td class="date-cell">{{ hop.bestBefore || '—' }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
               <button class="btn-icon btn-edit" (click)="editHop(hop.id)" title="Edit">

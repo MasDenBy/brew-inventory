@@ -51,7 +51,7 @@ internal static class RecipeEndpoints
                     ry.Yeast.Type.ToString(),
                     ry.Yeast.Form.ToString(),
                     ry.Amount,
-                    ry.Yeast.Labaratory
+                    ry.Yeast.Laboratory
                 )).ToList(),
                 recipe.RecipeMiscs.Select(rm => new RecipeMiscDetail(
                     rm.Misc.Id,

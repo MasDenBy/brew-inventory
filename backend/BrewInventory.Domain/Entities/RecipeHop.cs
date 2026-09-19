@@ -9,5 +9,5 @@ public class RecipeHop
     public int HopId { get; set; }
     public Hop Hop { get; set; } = null!;
 
-    public decimal Amount { get; set; }
+    public double Amount { get; set; }
 }

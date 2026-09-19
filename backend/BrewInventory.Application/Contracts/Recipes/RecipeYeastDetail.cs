@@ -5,5 +5,5 @@ public record RecipeYeastDetail(
     string Name,
     string Type,
     string Form,
-    decimal Amount,
+    double Amount,
     string Laboratory);

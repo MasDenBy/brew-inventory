@@ -9,17 +9,16 @@ public static class MiscMapper
     public static Misc ToEntity(BrewfatherMisc bf) => new()
     {
         Name = bf.name,
-        Amount = (decimal)bf.inventory,
+        Amount = bf.inventory,
         BrewfatherId = bf._id,
         Type = FromBrewfatherType(bf.type),
-        Unit = InventoryUnit.Grams,
-        BestBefore = null
+        Unit = InventoryUnit.Grams
     };
 
     public static void UpdateEntity(Misc existing, BrewfatherMisc bf)
     {
         existing.Name = bf.name;
-        existing.Amount = (decimal)bf.inventory;
+        existing.Amount = bf.inventory;
         existing.Type = FromBrewfatherType(bf.type);
     }
 
@@ -50,8 +49,7 @@ public static class MiscMapper
         Amount = 0,
         BrewfatherId = bf._id,
         Type = FromBrewfatherType(bf.type),
-        Unit = FromBrewfatherUnit(bf.unit),
-        BestBefore = null
+        Unit = FromBrewfatherUnit(bf.unit)
     };
 
     public static MiscType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToLowerInvariant() switch

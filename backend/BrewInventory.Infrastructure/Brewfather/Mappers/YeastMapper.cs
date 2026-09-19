@@ -6,22 +6,35 @@ namespace BrewInventory.Infrastructure.Brewfather.Mappers;
 
 public static class YeastMapper
 {
-    public static Yeast ToEntity(BrewfatherYeast bf) => new()
+    public static Yeast ToEntity(BrewfatherYeast bf)
     {
-        Name = bf.name,
-        Amount = (decimal)bf.inventory,
-        BrewfatherId = bf._id,
-        Type = FromBrewfatherType(bf.type),
-        Labaratory = string.Empty,
-        Form = YeastForm.Liquid,
-        BestBefore = null
-    };
+        ArgumentNullException.ThrowIfNull(bf);
+
+        return new()
+        {
+            Name = bf.Name,
+            Amount = bf.Inventory,
+            BrewfatherId = bf.Id,
+            Type = bf.Type,
+            Laboratory = bf.Laboratory ?? string.Empty,
+            Form = bf.Form,
+            Unit = bf.Unit,
+            ProductId = bf.ProductId,
+        };
+    }
 
     public static void UpdateEntity(Yeast existing, BrewfatherYeast bf)
     {
-        existing.Name = bf.name;
-        existing.Amount = (decimal)bf.inventory;
-        existing.Type = FromBrewfatherType(bf.type);
+        ArgumentNullException.ThrowIfNull(existing);
+        ArgumentNullException.ThrowIfNull(bf);
+
+        existing.Name = bf.Name;
+        existing.Amount = bf.Inventory;
+        existing.Type = bf.Type;
+        existing.Form = bf.Form;
+        existing.Laboratory = bf.Laboratory ?? existing.Laboratory;
+        existing.Unit = bf.Unit;
+        existing.ProductId = bf.ProductId;
     }
 
     public static string ToBrewfatherType(YeastType type) => type switch
@@ -50,9 +63,8 @@ public static class YeastMapper
         Amount = 0,
         BrewfatherId = bf._id,
         Type = FromBrewfatherType(bf.type),
-        Labaratory = string.IsNullOrWhiteSpace(bf.laboratory) ? "Unknown" : bf.laboratory,
-        Form = FromBrewfatherForm(bf.form),
-        BestBefore = null
+        Laboratory = string.IsNullOrWhiteSpace(bf.laboratory) ? "Unknown" : bf.laboratory,
+        Form = FromBrewfatherForm(bf.form)
     };
 
     public static YeastType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToLowerInvariant() switch

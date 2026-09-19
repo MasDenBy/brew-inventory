@@ -2,8 +2,9 @@ namespace BrewInventory.Domain.Entities.Enums;
 
 public enum YeastForm
 {
-    Liquid,
     Dry,
+    Liquid,
+    Slant,
     Culture,
     Slurry
 }

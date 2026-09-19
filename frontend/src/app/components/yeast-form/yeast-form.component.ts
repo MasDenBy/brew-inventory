@@ -47,7 +47,8 @@ export class YeastFormComponent implements OnInit {
       type: [YeastType.Ale, Validators.required],
       form: [YeastForm.Dry, Validators.required],
       amount: [0, [Validators.required, Validators.min(0)]],
-      bestBefore: [''],
+      unit: [''],
+      productId: [''],
       brewfatherId: ['']
     });
   }
@@ -61,7 +62,8 @@ export class YeastFormComponent implements OnInit {
           type: yeast.type,
           form: yeast.form,
           amount: yeast.amount,
-          bestBefore: yeast.bestBefore || '',
+          unit: yeast.unit || '',
+          productId: yeast.productId || '',
           brewfatherId: yeast.brewfatherId || ''
         });
       },
@@ -85,7 +87,8 @@ export class YeastFormComponent implements OnInit {
         type: formValue.type,
         form: formValue.form,
         amount: formValue.amount,
-        bestBefore: formValue.bestBefore || null,
+        unit: formValue.unit || '',
+        productId: formValue.productId || null,
         brewfatherId: formValue.brewfatherId || null
       };
 

@@ -27,7 +27,7 @@ public static class RecipeMapper
                     recipe.RecipeFermentables.Add(new RecipeFermentable
                     {
                         FermentableId = fermentable.Id,
-                        Amount = (decimal)bfFermentable.amount
+                        Amount = (double)bfFermentable.amount
                     });
                 }
             }
@@ -42,7 +42,7 @@ public static class RecipeMapper
                     recipe.RecipeHops.Add(new RecipeHop
                     {
                         HopId = hop.Id,
-                        Amount = (decimal)bfHop.amount
+                        Amount = (double)bfHop.amount
                     });
                 }
             }
@@ -57,7 +57,7 @@ public static class RecipeMapper
                     recipe.RecipeYeasts.Add(new RecipeYeast
                     {
                         YeastId = yeast.Id,
-                        Amount = (decimal)bfYeast.amount
+                        Amount = (double)bfYeast.amount
                     });
                 }
             }
@@ -72,7 +72,7 @@ public static class RecipeMapper
                     recipe.RecipeMiscs.Add(new RecipeMisc
                     {
                         MiscId = misc.Id,
-                        Amount = (decimal)bfMisc.amount
+                        Amount = (double)bfMisc.amount
                     });
                 }
             }
@@ -105,7 +105,7 @@ public static class RecipeMapper
                     existingRecipe.RecipeFermentables.Add(new RecipeFermentable
                     {
                         FermentableId = fermentable.Id,
-                        Amount = (decimal)bfFermentable.amount
+                        Amount = (double)bfFermentable.amount
                     });
                 }
             }
@@ -120,7 +120,7 @@ public static class RecipeMapper
                     existingRecipe.RecipeHops.Add(new RecipeHop
                     {
                         HopId = hop.Id,
-                        Amount = (decimal)bfHop.amount
+                        Amount = (double)bfHop.amount
                     });
                 }
             }
@@ -135,7 +135,7 @@ public static class RecipeMapper
                     existingRecipe.RecipeYeasts.Add(new RecipeYeast
                     {
                         YeastId = yeast.Id,
-                        Amount = (decimal)bfYeast.amount
+                        Amount = (double)bfYeast.amount
                     });
                 }
             }
@@ -150,7 +150,7 @@ public static class RecipeMapper
                     existingRecipe.RecipeMiscs.Add(new RecipeMisc
                     {
                         MiscId = misc.Id,
-                        Amount = (decimal)bfMisc.amount
+                        Amount = (double)bfMisc.amount
                     });
                 }
             }
@@ -195,7 +195,7 @@ public static class RecipeMapper
                 ry.Yeast.BrewfatherId!,
                 (double)ry.Amount,
                 ry.Yeast.Name,
-                string.IsNullOrWhiteSpace(ry.Yeast.Labaratory) ? null : ry.Yeast.Labaratory,
+                string.IsNullOrWhiteSpace(ry.Yeast.Laboratory) ? null : ry.Yeast.Laboratory,
                 YeastMapper.ToBrewfatherType(ry.Yeast.Type),
                 YeastMapper.ToBrewfatherForm(ry.Yeast.Form),
                 null,

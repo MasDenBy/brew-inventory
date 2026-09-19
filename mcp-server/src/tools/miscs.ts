@@ -8,7 +8,6 @@ interface Misc {
   amount: number;
   unit: string;
   type: string;
-  bestBefore: string | null;
   brewfatherId: string | null;
 }
 
@@ -45,8 +44,7 @@ export function registerMiscTools(server: McpServer) {
       const m = await api.get<Misc>(`/api/miscs/${id}`);
       const text = `[#${m.id}] ${m.name}
 Amount: ${m.amount} ${m.unit}
-Type: ${m.type}
-BestBefore: ${m.bestBefore || "-"}`;
+Type: ${m.type}`;
       return { content: [{ type: "text", text }] };
     },
   );
@@ -61,7 +59,6 @@ BestBefore: ${m.bestBefore || "-"}`;
         amount: z.number().nonnegative(),
         unit: z.string(),
         type: z.string().optional().nullable(),
-        bestBefore: z.string().optional().nullable(),
       }),
     },
     async (input) => {
@@ -70,7 +67,6 @@ BestBefore: ${m.bestBefore || "-"}`;
         amount: input.amount,
         unit: input.unit,
         type: input.type ?? null,
-        bestBefore: input.bestBefore ?? null,
         brewfatherId: null,
       });
       const text = `Created misc ingredient [#${created.id}] ${created.name} with amount ${created.amount} ${created.unit}.`;

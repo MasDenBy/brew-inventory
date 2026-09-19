@@ -22,6 +22,5 @@ export interface Misc {
   amount: number;
   unit: InventoryUnit;
   type: MiscType;
-  bestBefore: string | null;
   brewfatherId: string | null;
 }

@@ -1,9 +1,8 @@
+using BrewInventory.Application.Repositories;
 using BrewInventory.Domain.Entities;
 using BrewInventory.Infrastructure.Brewfather.Mappers;
 using BrewInventory.Infrastructure.Brewfather.Models;
-using BrewInventory.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace BrewInventory.Infrastructure.Brewfather;
 
@@ -12,300 +11,217 @@ public class BrewfatherSyncService : IBrewfatherSyncService
     private readonly IBrewfatherClient _brewfatherClient;
     private readonly IRecipeRepository _recipeRepository;
     private readonly Persistence.BrewInventoryContext _dbContext;
-    private readonly ILogger<BrewfatherSyncService> _logger;
 
     public BrewfatherSyncService(
         IBrewfatherClient brewfatherClient,
         IRecipeRepository recipeRepository,
-        Persistence.BrewInventoryContext dbContext,
-        ILogger<BrewfatherSyncService> logger)
+        Persistence.BrewInventoryContext dbContext)
     {
         _brewfatherClient = brewfatherClient;
         _recipeRepository = recipeRepository;
         _dbContext = dbContext;
-        _logger = logger;
     }
 
     public async Task SyncFermentablesAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting fermentables synchronization with Brewfather");
+        var brewfatherFermentables = await _brewfatherClient
+            .GetAllItemsAsync<BrewfatherFermentable>("inventory/fermentables", "grainCategory,percentage,color,lovibond,origin", cancellationToken);
 
-        try
+        var existingFermentables = await _dbContext.Fermentables
+            .Where(f => f.BrewfatherId != null)
+            .ToDictionaryAsync(f => f.BrewfatherId!, cancellationToken);
+
+        var addedCount = 0;
+        var updatedCount = 0;
+
+        foreach (var bfFermentable in brewfatherFermentables)
         {
-            var brewfatherFermentables = await _brewfatherClient
-                .GetAllInventoryItemsAsync<BrewfatherFermentable>("inventory/fermentables", cancellationToken);
-
-            _logger.LogInformation("Retrieved {Count} fermentables from Brewfather", brewfatherFermentables.Count);
-
-            var existingFermentables = await _dbContext.Fermentables
-                .Where(f => f.BrewfatherId != null)
-                .ToDictionaryAsync(f => f.BrewfatherId!, cancellationToken);
-
-            var addedCount = 0;
-            var updatedCount = 0;
-
-            foreach (var bfFermentable in brewfatherFermentables)
+            if (existingFermentables.TryGetValue(bfFermentable.Id, out var existingFermentable))
             {
-                if (existingFermentables.TryGetValue(bfFermentable._id, out var existingFermentable))
-                {
-                    FermentableMapper.UpdateEntity(existingFermentable, bfFermentable);
-                    updatedCount++;
-                }
-                else
-                {
-                    var newFermentable = FermentableMapper.ToEntity(bfFermentable);
-                    _dbContext.Fermentables.Add(newFermentable);
-                    addedCount++;
-                }
+                FermentableMapper.UpdateEntity(existingFermentable, bfFermentable);
+                updatedCount++;
             }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation(
-                "Fermentables synchronization completed. Added: {Added}, Updated: {Updated}",
-                addedCount, updatedCount);
+            else
+            {
+                var newFermentable = FermentableMapper.ToEntity(bfFermentable);
+                _dbContext.Fermentables.Add(newFermentable);
+                addedCount++;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during fermentables synchronization");
-            throw;
-        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task SyncHopsAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting hops synchronization with Brewfather");
+        var brewfatherHops = await _brewfatherClient
+            .GetAllInventoryItemsAsync<BrewfatherHop>("inventory/hops", cancellationToken);
 
-        try
+        var existingHops = await _dbContext.Hops
+            .Where(h => h.BrewfatherId != null)
+            .ToDictionaryAsync(h => h.BrewfatherId!, cancellationToken);
+
+        var addedCount = 0;
+        var updatedCount = 0;
+
+        foreach (var bfHop in brewfatherHops)
         {
-            var brewfatherHops = await _brewfatherClient
-                .GetAllInventoryItemsAsync<BrewfatherHop>("inventory/hops", cancellationToken);
-
-            _logger.LogInformation("Retrieved {Count} hops from Brewfather", brewfatherHops.Count);
-
-            var existingHops = await _dbContext.Hops
-                .Where(h => h.BrewfatherId != null)
-                .ToDictionaryAsync(h => h.BrewfatherId!, cancellationToken);
-
-            var addedCount = 0;
-            var updatedCount = 0;
-
-            foreach (var bfHop in brewfatherHops)
+            if (existingHops.TryGetValue(bfHop._id, out var existingHop))
             {
-                if (existingHops.TryGetValue(bfHop._id, out var existingHop))
-                {
-                    HopMapper.UpdateEntity(existingHop, bfHop);
-                    updatedCount++;
-                }
-                else
-                {
-                    var newHop = HopMapper.ToEntity(bfHop);
-                    _dbContext.Hops.Add(newHop);
-                    addedCount++;
-                }
+                HopMapper.UpdateEntity(existingHop, bfHop);
+                updatedCount++;
             }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation(
-                "Hops synchronization completed. Added: {Added}, Updated: {Updated}",
-                addedCount, updatedCount);
+            else
+            {
+                var newHop = HopMapper.ToEntity(bfHop);
+                _dbContext.Hops.Add(newHop);
+                addedCount++;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during hops synchronization");
-            throw;
-        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task SyncYeastsAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting yeasts synchronization with Brewfather");
+        var brewfatherYeasts = await _brewfatherClient
+            .GetAllItemsAsync<BrewfatherYeast>("inventory/yeasts", "laboratory,form,unit,productId", cancellationToken);
 
-        try
+        var existingYeasts = await _dbContext.Yeasts
+            .Where(y => y.BrewfatherId != null)
+            .ToDictionaryAsync(y => y.BrewfatherId!, cancellationToken);
+
+        var addedCount = 0;
+        var updatedCount = 0;
+
+        foreach (var bfYeast in brewfatherYeasts)
         {
-            var brewfatherYeasts = await _brewfatherClient
-                .GetAllInventoryItemsAsync<BrewfatherYeast>("inventory/yeasts", cancellationToken);
-
-            _logger.LogInformation("Retrieved {Count} yeasts from Brewfather", brewfatherYeasts.Count);
-
-            var existingYeasts = await _dbContext.Yeasts
-                .Where(y => y.BrewfatherId != null)
-                .ToDictionaryAsync(y => y.BrewfatherId!, cancellationToken);
-
-            var addedCount = 0;
-            var updatedCount = 0;
-
-            foreach (var bfYeast in brewfatherYeasts)
+            if (existingYeasts.TryGetValue(bfYeast.Id, out var existingYeast))
             {
-                if (existingYeasts.TryGetValue(bfYeast._id, out var existingYeast))
-                {
-                    YeastMapper.UpdateEntity(existingYeast, bfYeast);
-                    updatedCount++;
-                }
-                else
-                {
-                    var newYeast = YeastMapper.ToEntity(bfYeast);
-                    _dbContext.Yeasts.Add(newYeast);
-                    addedCount++;
-                }
+                YeastMapper.UpdateEntity(existingYeast, bfYeast);
+                updatedCount++;
             }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation(
-                "Yeasts synchronization completed. Added: {Added}, Updated: {Updated}",
-                addedCount, updatedCount);
+            else
+            {
+                var newYeast = YeastMapper.ToEntity(bfYeast);
+                _dbContext.Yeasts.Add(newYeast);
+                addedCount++;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during yeasts synchronization");
-            throw;
-        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task SyncMiscsAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting miscs synchronization with Brewfather");
+        var brewfatherMiscs = await _brewfatherClient
+            .GetAllInventoryItemsAsync<BrewfatherMisc>("inventory/miscs", cancellationToken);
 
-        try
+        var existingMiscs = await _dbContext.Miscs
+            .Where(m => m.BrewfatherId != null)
+            .ToDictionaryAsync(m => m.BrewfatherId!, cancellationToken);
+
+        var addedCount = 0;
+        var updatedCount = 0;
+
+        foreach (var bfMisc in brewfatherMiscs)
         {
-            var brewfatherMiscs = await _brewfatherClient
-                .GetAllInventoryItemsAsync<BrewfatherMisc>("inventory/miscs", cancellationToken);
-
-            _logger.LogInformation("Retrieved {Count} miscs from Brewfather", brewfatherMiscs.Count);
-
-            var existingMiscs = await _dbContext.Miscs
-                .Where(m => m.BrewfatherId != null)
-                .ToDictionaryAsync(m => m.BrewfatherId!, cancellationToken);
-
-            var addedCount = 0;
-            var updatedCount = 0;
-
-            foreach (var bfMisc in brewfatherMiscs)
+            if (existingMiscs.TryGetValue(bfMisc._id, out var existingMisc))
             {
-                if (existingMiscs.TryGetValue(bfMisc._id, out var existingMisc))
-                {
-                    MiscMapper.UpdateEntity(existingMisc, bfMisc);
-                    updatedCount++;
-                }
-                else
-                {
-                    var newMisc = MiscMapper.ToEntity(bfMisc);
-                    _dbContext.Miscs.Add(newMisc);
-                    addedCount++;
-                }
+                MiscMapper.UpdateEntity(existingMisc, bfMisc);
+                updatedCount++;
             }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation(
-                "Miscs synchronization completed. Added: {Added}, Updated: {Updated}",
-                addedCount, updatedCount);
+            else
+            {
+                var newMisc = MiscMapper.ToEntity(bfMisc);
+                _dbContext.Miscs.Add(newMisc);
+                addedCount++;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during miscs synchronization");
-            throw;
-        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task SyncRecipesAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting recipes synchronization with Brewfather");
+        var brewfatherRecipes = await _brewfatherClient
+            .GetAllItemsAsync<BrewfatherRecipe>("recipes", "fermentables,hops,miscs,yeasts", cancellationToken);
 
-        try
+        var existingRecipes = await _dbContext.Recipes
+            .Include(r => r.RecipeFermentables)
+            .Include(r => r.RecipeHops)
+            .Include(r => r.RecipeMiscs)
+            .Include(r => r.RecipeYeasts)
+            .Where(r => r.BrewfatherId != null)
+            .ToDictionaryAsync(r => r.BrewfatherId!, cancellationToken);
+
+        var brewfatherRecipeIds = brewfatherRecipes.Select(r => r._id).ToHashSet();
+
+        var recipesToDelete = existingRecipes.Values
+            .Where(r => !brewfatherRecipeIds.Contains(r.BrewfatherId!))
+            .ToList();
+
+        foreach (var recipeToDelete in recipesToDelete)
         {
-            var brewfatherRecipes = await _brewfatherClient
-                .GetAllItemsAsync<BrewfatherRecipe>("recipes", "fermentables,hops,miscs,yeasts", cancellationToken);
+            _dbContext.Recipes.Remove(recipeToDelete);
+        }
 
-            _logger.LogInformation("Retrieved {Count} recipes from Brewfather", brewfatherRecipes.Count);
+        var fermentableLookup = await _dbContext.Fermentables
+            .Where(f => f.BrewfatherId != null)
+            .ToDictionaryAsync(f => f.BrewfatherId!, cancellationToken);
 
-            var existingRecipes = await _dbContext.Recipes
-                .Include(r => r.RecipeFermentables)
-                .Include(r => r.RecipeHops)
-                .Include(r => r.RecipeMiscs)
-                .Include(r => r.RecipeYeasts)
-                .Where(r => r.BrewfatherId != null)
-                .ToDictionaryAsync(r => r.BrewfatherId!, cancellationToken);
+        var hopLookup = await _dbContext.Hops
+            .Where(h => h.BrewfatherId != null)
+            .ToDictionaryAsync(h => h.BrewfatherId!, cancellationToken);
 
-            var brewfatherRecipeIds = brewfatherRecipes.Select(r => r._id).ToHashSet();
+        var yeastLookup = await _dbContext.Yeasts
+            .Where(y => y.BrewfatherId != null)
+            .ToDictionaryAsync(y => y.BrewfatherId!, cancellationToken);
 
-            var recipesToDelete = existingRecipes.Values
-                .Where(r => !brewfatherRecipeIds.Contains(r.BrewfatherId!))
-                .ToList();
+        var miscLookup = await _dbContext.Miscs
+            .Where(m => m.BrewfatherId != null)
+            .ToDictionaryAsync(m => m.BrewfatherId!, cancellationToken);
 
-            foreach (var recipeToDelete in recipesToDelete)
+        var addedCount = 0;
+        var updatedCount = 0;
+        var deletedCount = recipesToDelete.Count;
+        var missingIngredientsCount = 0;
+
+        foreach (var bfRecipe in brewfatherRecipes)
+        {
+            missingIngredientsCount += await EnsureIngredientsExistAsync(
+                bfRecipe,
+                fermentableLookup,
+                hopLookup,
+                yeastLookup,
+                miscLookup,
+                cancellationToken);
+
+            if (existingRecipes.TryGetValue(bfRecipe._id, out var existingRecipe))
             {
-                _dbContext.Recipes.Remove(recipeToDelete);
-            }
-
-            var fermentableLookup = await _dbContext.Fermentables
-                .Where(f => f.BrewfatherId != null)
-                .ToDictionaryAsync(f => f.BrewfatherId!, cancellationToken);
-
-            var hopLookup = await _dbContext.Hops
-                .Where(h => h.BrewfatherId != null)
-                .ToDictionaryAsync(h => h.BrewfatherId!, cancellationToken);
-
-            var yeastLookup = await _dbContext.Yeasts
-                .Where(y => y.BrewfatherId != null)
-                .ToDictionaryAsync(y => y.BrewfatherId!, cancellationToken);
-
-            var miscLookup = await _dbContext.Miscs
-                .Where(m => m.BrewfatherId != null)
-                .ToDictionaryAsync(m => m.BrewfatherId!, cancellationToken);
-
-            var addedCount = 0;
-            var updatedCount = 0;
-            var deletedCount = recipesToDelete.Count;
-            var missingIngredientsCount = 0;
-
-            foreach (var bfRecipe in brewfatherRecipes)
-            {
-                missingIngredientsCount += await EnsureIngredientsExistAsync(
+                RecipeMapper.UpdateEntity(
+                    existingRecipe,
                     bfRecipe,
                     fermentableLookup,
                     hopLookup,
                     yeastLookup,
-                    miscLookup,
-                    cancellationToken);
-
-                if (existingRecipes.TryGetValue(bfRecipe._id, out var existingRecipe))
-                {
-                    RecipeMapper.UpdateEntity(
-                        existingRecipe,
-                        bfRecipe,
-                        fermentableLookup,
-                        hopLookup,
-                        yeastLookup,
-                        miscLookup);
-                    updatedCount++;
-                }
-                else
-                {
-                    var newRecipe = RecipeMapper.ToEntity(
-                        bfRecipe,
-                        fermentableLookup,
-                        hopLookup,
-                        yeastLookup,
-                        miscLookup);
-                    _dbContext.Recipes.Add(newRecipe);
-                    addedCount++;
-                }
+                    miscLookup);
+                updatedCount++;
             }
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation(
-                "Recipes synchronization completed. Added: {Added}, Updated: {Updated}, Deleted: {Deleted}, Missing Ingredients Created: {MissingIngredients}",
-                addedCount, updatedCount, deletedCount, missingIngredientsCount);
+            else
+            {
+                var newRecipe = RecipeMapper.ToEntity(
+                    bfRecipe,
+                    fermentableLookup,
+                    hopLookup,
+                    yeastLookup,
+                    miscLookup);
+                _dbContext.Recipes.Add(newRecipe);
+                addedCount++;
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during recipes synchronization");
-            throw;
-        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<int> EnsureIngredientsExistAsync(
@@ -329,7 +245,6 @@ public class BrewfatherSyncService : IBrewfatherSyncService
                     _dbContext.Fermentables.Add(newFermentable);
                     fermentableLookup[bfFermentable._id] = newFermentable;
                     createdCount++;
-                    _logger.LogInformation("Created missing fermentable: {Name} with BrewfatherId: {Id}", newFermentable.Name, newFermentable.BrewfatherId);
                 }
             }
         }
@@ -345,7 +260,6 @@ public class BrewfatherSyncService : IBrewfatherSyncService
                     _dbContext.Hops.Add(newHop);
                     hopLookup[bfHop._id] = newHop;
                     createdCount++;
-                    _logger.LogInformation("Created missing hop: {Name} with BrewfatherId: {Id}", newHop.Name, newHop.BrewfatherId);
                 }
             }
         }
@@ -361,7 +275,6 @@ public class BrewfatherSyncService : IBrewfatherSyncService
                     _dbContext.Yeasts.Add(newYeast);
                     yeastLookup[bfYeast._id] = newYeast;
                     createdCount++;
-                    _logger.LogInformation("Created missing yeast: {Name} with BrewfatherId: {Id}", newYeast.Name, newYeast.BrewfatherId);
                 }
             }
         }
@@ -377,7 +290,6 @@ public class BrewfatherSyncService : IBrewfatherSyncService
                     _dbContext.Miscs.Add(newMisc);
                     miscLookup[bfMisc._id] = newMisc;
                     createdCount++;
-                    _logger.LogInformation("Created missing misc: {Name} with BrewfatherId: {Id}", newMisc.Name, newMisc.BrewfatherId);
                 }
             }
         }
@@ -392,8 +304,6 @@ public class BrewfatherSyncService : IBrewfatherSyncService
 
     public async Task<Recipe> PushRecipeToBrewfatherAsync(int recipeId, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting push of recipe {RecipeId} to Brewfather", recipeId);
-
         var recipe = await _recipeRepository.GetByIdAsync(recipeId, cancellationToken);
 
         if (recipe is null)
@@ -421,10 +331,6 @@ public class BrewfatherSyncService : IBrewfatherSyncService
 
         recipe.BrewfatherId = brewfatherId;
         await _recipeRepository.SaveChangesAsync(cancellationToken);
-
-        _logger.LogInformation(
-            "Recipe {RecipeId} pushed to Brewfather with id {BrewfatherId}",
-            recipeId, brewfatherId);
 
         return recipe;
     }

@@ -3,6 +3,7 @@ using System;
 using BrewInventory.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BrewInventory.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(BrewInventoryContext))]
-    partial class BrewInventoryContextModelSnapshot : ModelSnapshot
+    [Migration("20260917154950_RemoveYeastBestBefore")]
+    partial class RemoveYeastBestBefore
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -23,19 +26,16 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("BestBefore")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("BrewfatherId")
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Color")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("GrainCategory")
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("Lovibond")
                         .HasColumnType("REAL");
 
                     b.Property<string>("Name")
@@ -44,9 +44,6 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Origin")
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("Percentage")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Supplier")
                         .HasColumnType("TEXT");
@@ -68,8 +65,11 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                     b.Property<double>("AlphaAcid")
                         .HasColumnType("REAL");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("BestBefore")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("BrewfatherId")
                         .HasColumnType("TEXT");
@@ -98,8 +98,11 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("BestBefore")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("BrewfatherId")
                         .HasColumnType("TEXT");
@@ -143,8 +146,8 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("FermentableId")
                         .HasColumnType("INTEGER");
@@ -167,8 +170,8 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("HopId")
                         .HasColumnType("INTEGER");
@@ -191,8 +194,8 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("MiscId")
                         .HasColumnType("INTEGER");
@@ -215,8 +218,8 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("INTEGER");
@@ -239,8 +242,8 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("BrewfatherId")
                         .HasColumnType("TEXT");

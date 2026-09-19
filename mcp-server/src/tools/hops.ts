@@ -6,7 +6,6 @@ interface Hop {
   id: number;
   name: string;
   amount: number;
-  bestBefore: string | null;
   brewfatherId: string | null;
   origin: string | null;
   type: string;
@@ -50,8 +49,7 @@ Amount: ${h.amount}
 Type: ${h.type}
 AlphaAcid: ${h.alphaAcid}%
 Origin: ${h.origin || "-"}
-HarvestYear: ${h.harvestYear || "-"}
-BestBefore: ${h.bestBefore || "-"}`;
+HarvestYear: ${h.harvestYear || "-"}`;
       return { content: [{ type: "text", text }] };
     },
   );
@@ -68,7 +66,6 @@ BestBefore: ${h.bestBefore || "-"}`;
         alphaAcid: z.number().nonnegative().default(0),
         origin: z.string().optional().nullable(),
         harvestYear: z.number().int().optional().nullable(),
-        bestBefore: z.string().optional().nullable(),
       }),
     },
     async (input) => {
@@ -79,7 +76,6 @@ BestBefore: ${h.bestBefore || "-"}`;
         alphaAcid: input.alphaAcid,
         origin: input.origin ?? null,
         harvestYear: input.harvestYear ?? null,
-        bestBefore: input.bestBefore ?? null,
         brewfatherId: null,
       });
       const text = `Created hop [#${created.id}] ${created.name} with amount ${created.amount} (${created.type}, ${created.alphaAcid}% AA).`;

@@ -20,7 +20,6 @@
           <th>Name</th>
           <th>Type</th>
           <th>Amount</th>
-          <th>Best Before</th>
           <th class="actions-column">Actions</th>
         </tr>
       </thead>
@@ -38,7 +37,6 @@
           <td class="amount-cell">
             <span class="amount-badge">{{ misc.amount }} {{ getUnitLabel(misc.unit) }}</span>
           </td>
-          <td class="date-cell">{{ misc.bestBefore || '—' }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
               <button class="btn-icon btn-edit" (click)="editMisc(misc.id)" title="Edit">

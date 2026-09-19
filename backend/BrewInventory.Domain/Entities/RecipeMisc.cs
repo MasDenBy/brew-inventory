@@ -9,5 +9,5 @@ public class RecipeMisc
     public int MiscId { get; set; }
     public Misc Misc { get; set; } = null!;
 
-    public decimal Amount { get; set; }
+    public double Amount { get; set; }
 }

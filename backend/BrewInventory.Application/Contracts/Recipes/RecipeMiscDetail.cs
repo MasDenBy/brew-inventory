@@ -5,4 +5,4 @@ public record RecipeMiscDetail(
     string Name,
     string Type,
     string Unit,
-    decimal Amount);
+    double Amount);

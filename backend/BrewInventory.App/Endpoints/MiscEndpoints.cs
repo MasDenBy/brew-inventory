@@ -15,7 +15,7 @@ internal static class MiscEndpoints
         {
             var items = await repo.GetAllAsync(ct);
             var responses = items.Select(m => new MiscResponse(
-                m.Id, m.Name, m.Amount, m.Unit, m.Type, m.BestBefore, m.BrewfatherId)).ToList();
+                m.Id, m.Name, m.Amount, m.Unit, m.Type, m.BrewfatherId)).ToList();
             return Results.Ok(responses);
         });
 
@@ -24,7 +24,7 @@ internal static class MiscEndpoints
             var m = await repo.GetByIdAsync(id, ct);
             return m is null
                 ? Results.NotFound()
-                : Results.Ok(new MiscResponse(m.Id, m.Name, m.Amount, m.Unit, m.Type, m.BestBefore, m.BrewfatherId));
+                : Results.Ok(new MiscResponse(m.Id, m.Name, m.Amount, m.Unit, m.Type, m.BrewfatherId));
         });
 
         group.MapPost("/", async (CreateMiscRequest req, IMiscRepository repo, CancellationToken ct) =>
@@ -35,13 +35,12 @@ internal static class MiscEndpoints
                 Amount = req.Amount,
                 Unit = req.Unit,
                 Type = req.Type,
-                BestBefore = req.BestBefore,
                 BrewfatherId = req.BrewfatherId
             };
 
             await repo.AddAsync(entity, ct);
 
-            var resp = new MiscResponse(entity.Id, entity.Name, entity.Amount, entity.Unit, entity.Type, entity.BestBefore, entity.BrewfatherId);
+            var resp = new MiscResponse(entity.Id, entity.Name, entity.Amount, entity.Unit, entity.Type, entity.BrewfatherId);
             return Results.Created($"/api/miscs/{entity.Id.ToString(CultureInfo.InvariantCulture)}", resp);
         });
 
@@ -54,7 +53,6 @@ internal static class MiscEndpoints
             entity.Amount = req.Amount;
             entity.Unit = req.Unit;
             entity.Type = req.Type;
-            entity.BestBefore = req.BestBefore;
             entity.BrewfatherId = req.BrewfatherId;
 
             await repo.UpdateAsync(entity, ct);

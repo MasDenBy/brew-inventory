@@ -15,8 +15,9 @@ public static class FermentableEndpoints
         {
             var items = await repo.GetAllAsync(ct);
             var responses = items.Select(f => new FermentableResponse(
-                f.Id, f.Name, f.Amount, f.BestBefore, f.BrewfatherId,
-                f.Supplier, f.Origin, f.Type.ToString(), f.Color)).ToList();
+                f.Id, f.Name, f.Amount, f.BrewfatherId,
+                f.Supplier, f.Origin, f.Type.ToString(), f.Color,
+                f.GrainCategory, f.Percentage, f.Lovibond)).ToList();
             return Results.Ok(responses);
         });
 
@@ -26,8 +27,9 @@ public static class FermentableEndpoints
             return f is null
                 ? Results.NotFound()
                 : Results.Ok(new FermentableResponse(
-                    f.Id, f.Name, f.Amount, f.BestBefore, f.BrewfatherId,
-                    f.Supplier, f.Origin, f.Type.ToString(), f.Color));
+                    f.Id, f.Name, f.Amount, f.BrewfatherId,
+                    f.Supplier, f.Origin, f.Type.ToString(), f.Color,
+                    f.GrainCategory, f.Percentage, f.Lovibond));
         });
 
         group.MapPost("/", async (CreateFermentableRequest req, IFermentableRepository repo, CancellationToken ct) =>
@@ -36,17 +38,19 @@ public static class FermentableEndpoints
             {
                 Name = req.Name,
                 Amount = req.Amount,
-                BestBefore = req.BestBefore,
                 BrewfatherId = req.BrewfatherId,
                 Supplier = req.Supplier,
                 Origin = req.Origin,
-                Color = req.Color
+                Color = req.Color,
+                GrainCategory = req.GrainCategory,
+                Percentage = req.Percentage,
+                Lovibond = req.Lovibond
             };
             if (Enum.TryParse(typeof(FermentableType), req.Type, true, out var ft)) entity.Type = (FermentableType)ft;
 
             await repo.AddAsync(entity, ct);
 
-            var resp = new FermentableResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Supplier, entity.Origin, entity.Type.ToString(), entity.Color);
+            var resp = new FermentableResponse(entity.Id, entity.Name, entity.Amount, entity.BrewfatherId, entity.Supplier, entity.Origin, entity.Type.ToString(), entity.Color, entity.GrainCategory, entity.Percentage, entity.Lovibond);
             return Results.Created($"/api/fermentables/{entity.Id}", resp);
         });
 
@@ -57,11 +61,13 @@ public static class FermentableEndpoints
 
             entity.Name = req.Name;
             entity.Amount = req.Amount;
-            entity.BestBefore = req.BestBefore;
             entity.BrewfatherId = req.BrewfatherId;
             entity.Supplier = req.Supplier;
             entity.Origin = req.Origin;
             entity.Color = req.Color;
+            entity.GrainCategory = req.GrainCategory;
+            entity.Percentage = req.Percentage;
+            entity.Lovibond = req.Lovibond;
             if (Enum.TryParse(typeof(FermentableType), req.Type, true, out var ft)) entity.Type = (FermentableType)ft;
 
             await repo.UpdateAsync(entity, ct);

@@ -4,7 +4,7 @@ public record RecipeFermentableDetail(
     int FermentableId,
     string Name,
     string Type,
-    decimal Amount,
+    double Amount,
     string? Supplier,
     string? Origin,
     double Color);

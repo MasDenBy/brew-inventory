@@ -4,7 +4,7 @@ public record RecipeHopDetail(
     int HopId,
     string Name,
     string Type,
-    decimal Amount,
+    double Amount,
     string? Origin,
     double AlphaAcid,
     int? HarvestYear);
