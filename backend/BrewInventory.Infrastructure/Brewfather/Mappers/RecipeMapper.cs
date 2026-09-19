@@ -187,7 +187,7 @@ public static class RecipeMapper
                 (double)rm.Amount,
                 rm.Misc.Name,
                 MiscMapper.ToBrewfatherType(rm.Misc.Type),
-                MiscMapper.ToBrewfatherUnit(rm.Misc.Unit),
+                rm.Misc.Unit,
                 "Boil",
                 0
             )).ToList(),

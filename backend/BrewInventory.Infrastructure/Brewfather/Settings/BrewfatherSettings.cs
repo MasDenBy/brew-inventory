@@ -2,7 +2,7 @@ namespace BrewInventory.Infrastructure.Brewfather.Settings;
 
 public class BrewfatherSettings
 {
-    public string UserId { get; set; } = string.Empty;
-    public string ApiKey { get; set; } = string.Empty;
-    public string BaseUrl { get; set; } = "https://api.brewfather.app/v2";
+    public string UserId { get; set; } = null!;
+    public string ApiKey { get; set; } = null!;
+    public Uri BaseUrl { get; set; } = null!;
 }

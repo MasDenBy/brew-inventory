@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MiscService } from '../../services/misc.service';
-import { Misc, MiscType, InventoryUnit } from '../../models/misc.model';
+import { Misc } from '../../models/misc.model';
 
 @Component({
   selector: 'app-misc-form',
@@ -18,8 +18,8 @@ export class MiscFormComponent implements OnInit {
   miscId?: number;
   isSubmitting = false;
   error: string | null = null;
-  miscTypes: { value: MiscType; label: string }[] = [];
-  inventoryUnits: { value: InventoryUnit; label: string }[] = [];
+  miscTypes: { value: string; label: string }[] = [];
+  inventoryUnits: { value: string; label: string }[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -43,30 +43,31 @@ export class MiscFormComponent implements OnInit {
 
   initEnums(): void {
     this.miscTypes = [
-      { value: MiscType.Spice, label: 'Spice' },
-      { value: MiscType.Herb, label: 'Herb' },
-      { value: MiscType.Fruit, label: 'Fruit' },
-      { value: MiscType.Flavor, label: 'Flavor' },
-      { value: MiscType.WaterAgent, label: 'Water Agent' },
-      { value: MiscType.Other, label: 'Other' }
+      { value: 'Spice', label: 'Spice' },
+      { value: 'Fining', label: 'Fining' },
+      { value: 'Herb', label: 'Herb' },
+      { value: 'Flavor', label: 'Flavor' },
+      { value: 'Water Agent', label: 'Water Agent' },
+      { value: 'Other', label: 'Other' }
     ];
 
     this.inventoryUnits = [
-      { value: InventoryUnit.Grams, label: 'Grams (g)' },
-      { value: InventoryUnit.Kilograms, label: 'Kilograms (kg)' },
-      { value: InventoryUnit.Liters, label: 'Liters (L)' },
-      { value: InventoryUnit.Milliliters, label: 'Milliliters (ml)' },
-      { value: InventoryUnit.Packages, label: 'Packages' },
-      { value: InventoryUnit.Tablets, label: 'Tablets' }
+      { value: 'g', label: 'Grams (g)' },
+      { value: 'kg', label: 'Kilograms (kg)' },
+      { value: 'l', label: 'Liters (L)' },
+      { value: 'ml', label: 'Milliliters (ml)' },
+      { value: 'pkg', label: 'Packages' },
+      { value: 'items', label: 'Tablets' }
     ];
   }
 
   initForm(): void {
     this.miscForm = this.fb.group({
       name: ['', Validators.required],
-      type: [MiscType.Spice, Validators.required],
-      unit: [InventoryUnit.Grams, Validators.required],
+      type: ['Spice', Validators.required],
+      unit: ['g', Validators.required],
       amount: [0, [Validators.required, Validators.min(0)]],
+      use: ['', Validators.required],
       brewfatherId: ['']
     });
   }
@@ -79,6 +80,7 @@ export class MiscFormComponent implements OnInit {
           type: misc.type,
           unit: misc.unit,
           amount: misc.amount,
+          use: misc.use || '',
           brewfatherId: misc.brewfatherId || ''
         });
       },
@@ -98,9 +100,10 @@ export class MiscFormComponent implements OnInit {
       const misc: Misc = {
         id: this.miscId || 0,
         name: formValue.name,
-        type: +formValue.type,
-        unit: +formValue.unit,
+        type: formValue.type,
+        unit: formValue.unit,
         amount: formValue.amount,
+        use: formValue.use || '',
         brewfatherId: formValue.brewfatherId || null
       };
 

@@ -29,13 +29,10 @@ public class BrewfatherClient : IBrewfatherClient
 
         var authString = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{settings.Value.UserId}:{settings.Value.ApiKey}"));
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authString);
-        _httpClient.BaseAddress = new Uri(settings.Value.BaseUrl);
+        _httpClient.BaseAddress = settings.Value.BaseUrl;
     }
 
-    public Task<List<T>> GetAllInventoryItemsAsync<T>(string endpoint, CancellationToken cancellationToken = default) =>
-        GetAllItemsAsync<T>(endpoint, include: null, cancellationToken);
-
-    public async Task<List<T>> GetAllItemsAsync<T>(string endpoint, string? include = null, CancellationToken cancellationToken = default)
+    public async Task<ICollection<T>> GetAllItemsAsync<T>(string endpoint, string? include = null, CancellationToken cancellationToken = default)
     {
         var allItems = new List<T>();
         string? startAfter = null;

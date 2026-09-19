@@ -6,31 +6,41 @@ namespace BrewInventory.Infrastructure.Brewfather.Mappers;
 
 public static class MiscMapper
 {
-    public static Misc ToEntity(BrewfatherMisc bf) => new()
+    public static Misc ToEntity(BrewfatherMisc bf)
     {
-        Name = bf.name,
-        Amount = bf.inventory,
-        BrewfatherId = bf._id,
-        Type = FromBrewfatherType(bf.type),
-        Unit = InventoryUnit.Grams
-    };
+        ArgumentNullException.ThrowIfNull(bf);
+
+        return new()
+        {
+            Name = bf.Name,
+            Amount = bf.Inventory ?? 0,
+            BrewfatherId = bf.Id,
+            Type = bf.Type,
+            Unit = bf.Unit,
+            Use = bf.Use
+        };
+    }
 
     public static void UpdateEntity(Misc existing, BrewfatherMisc bf)
     {
-        existing.Name = bf.name;
-        existing.Amount = bf.inventory;
-        existing.Type = FromBrewfatherType(bf.type);
+        ArgumentNullException.ThrowIfNull(existing);
+        ArgumentNullException.ThrowIfNull(bf);
+
+        existing.Name = bf.Name;
+        existing.Amount = bf.Inventory ?? 0;
+        existing.Type = bf.Type;
+        existing.Unit = bf.Unit;
+        existing.Use = bf.Use;
     }
 
     public static string ToBrewfatherType(MiscType type) => type switch
     {
         MiscType.Spice => "Spice",
         MiscType.Herb => "Herb",
-        MiscType.Fruit => "Fruit",
         MiscType.Flavor => "Flavoring",
         MiscType.Fining => "Fining",
         MiscType.WaterAgent => "Water Agent",
-        _ => "Other"
+        _ => "Other",
     };
 
     public static string ToBrewfatherUnit(InventoryUnit unit) => unit switch
@@ -40,7 +50,7 @@ public static class MiscMapper
         InventoryUnit.Milliliters => "ml",
         InventoryUnit.Packages => "pkg",
         InventoryUnit.Tablets => "items",
-        _ => "g"
+        _ => "g",
     };
 
     public static Misc ToEntityFromRecipe(Models.BrewfatherRecipeMisc bf) => new()
@@ -49,28 +59,17 @@ public static class MiscMapper
         Amount = 0,
         BrewfatherId = bf._id,
         Type = FromBrewfatherType(bf.type),
-        Unit = FromBrewfatherUnit(bf.unit)
+        Unit = bf.unit ?? "g",
+        Use = bf.use ?? "",
     };
 
-    public static MiscType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToLowerInvariant() switch
+    public static MiscType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToUpperInvariant() switch
     {
-        "spice" => MiscType.Spice,
-        "herb" => MiscType.Herb,
-        "fruit" => MiscType.Fruit,
-        "flavor" or "flavoring" => MiscType.Flavor,
-        "fining" => MiscType.Fining,
-        "water agent" or "water" => MiscType.WaterAgent,
-        _ => MiscType.Other
-    };
-
-    public static InventoryUnit FromBrewfatherUnit(string? brewfatherUnit) => brewfatherUnit?.ToLowerInvariant() switch
-    {
-        "g" or "gram" or "grams" => InventoryUnit.Grams,
-        "kg" or "kilogram" or "kilograms" => InventoryUnit.Kilograms,
-        "ml" or "milliliter" or "milliliters" => InventoryUnit.Milliliters,
-        "l" or "liter" or "liters" => InventoryUnit.Liters,
-        "pkg" or "package" or "packages" => InventoryUnit.Packages,
-        "tablet" or "tablets" => InventoryUnit.Tablets,
-        _ => InventoryUnit.Grams
+        "SPICE" => MiscType.Spice,
+        "HERB" => MiscType.Herb,
+        "FLAVOR" or "FLAVORING" => MiscType.Flavor,
+        "FINING" => MiscType.Fining,
+        "WATER AGENT" or "WATER" => MiscType.WaterAgent,
+        _ => MiscType.Other,
     };
 }

@@ -115,7 +115,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
     public async Task SyncMiscsAsync(CancellationToken cancellationToken = default)
     {
         var brewfatherMiscs = await _brewfatherClient
-            .GetAllInventoryItemsAsync<BrewfatherMisc>("inventory/miscs", cancellationToken);
+            .GetAllItemsAsync<BrewfatherMisc>("inventory/miscs", "unit", cancellationToken);
 
         var existingMiscs = await _dbContext.Miscs
             .Where(m => m.BrewfatherId != null)
@@ -126,7 +126,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
 
         foreach (var bfMisc in brewfatherMiscs)
         {
-            if (existingMiscs.TryGetValue(bfMisc._id, out var existingMisc))
+            if (existingMiscs.TryGetValue(bfMisc.Id, out var existingMisc))
             {
                 MiscMapper.UpdateEntity(existingMisc, bfMisc);
                 updatedCount++;

@@ -19,6 +19,7 @@
         <tr>
           <th>Name</th>
           <th>Type</th>
+          <th>Use</th>
           <th>Amount</th>
           <th class="actions-column">Actions</th>
         </tr>
@@ -32,10 +33,13 @@
             </div>
           </td>
           <td class="type-cell">
-            <span class="badge" [ngClass]="'badge-' + misc.type.toString().toLowerCase()">{{ getTypeLabel(misc.type) }}</span>
+            <span class="badge" [ngClass]="'badge-' + misc.type.toLowerCase()">{{ misc.type }}</span>
+          </td>
+          <td class="use-cell">
+            {{ misc.use }}
           </td>
           <td class="amount-cell">
-            <span class="amount-badge">{{ misc.amount }} {{ getUnitLabel(misc.unit) }}</span>
+            <span class="amount-badge">{{ misc.amount }} {{ misc.unit }}</span>
           </td>
           <td class="actions-cell">
             <div class="action-buttons">

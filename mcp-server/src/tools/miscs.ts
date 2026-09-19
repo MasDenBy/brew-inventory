@@ -8,6 +8,7 @@ interface Misc {
   amount: number;
   unit: string;
   type: string;
+  use: string;
   brewfatherId: string | null;
 }
 
@@ -27,7 +28,7 @@ export function registerMiscTools(server: McpServer) {
           : items
               .map(
                 (m) =>
-                  `- [#${m.id}] ${m.name} | Amount: ${m.amount} ${m.unit} | Type: ${m.type}`,
+                  `- [#${m.id}] ${m.name} | Amount: ${m.amount} ${m.unit} | Type: ${m.type} | Use: ${m.use}`,
               )
               .join("\n");
       return { content: [{ type: "text", text }] };
@@ -44,7 +45,8 @@ export function registerMiscTools(server: McpServer) {
       const m = await api.get<Misc>(`/api/miscs/${id}`);
       const text = `[#${m.id}] ${m.name}
 Amount: ${m.amount} ${m.unit}
-Type: ${m.type}`;
+Type: ${m.type}
+Use: ${m.use}`;
       return { content: [{ type: "text", text }] };
     },
   );
@@ -53,12 +55,13 @@ Type: ${m.type}`;
     "create_misc",
     {
       description:
-        "Create a new misc ingredient in the inventory. Unit is one of: Grams, Kilograms, Liters, Milliliters, Packages, Tablets. Type is one of: Spice, Herb, Fruit, Flavor, WaterAgent, Other, Fining",
+        "Create a new misc ingredient in the inventory. Unit is one of: Grams, Kilograms, Liters, Milliliters, Packages, Tablets. Type is one of: Spice, Herb, Fining, Flavor, WaterAgent, Other",
       inputSchema: z.object({
         name: z.string().min(1),
         amount: z.number().nonnegative(),
         unit: z.string(),
         type: z.string().optional().nullable(),
+        use: z.string().default(''),
       }),
     },
     async (input) => {
@@ -67,9 +70,10 @@ Type: ${m.type}`;
         amount: input.amount,
         unit: input.unit,
         type: input.type ?? null,
+        use: input.use,
         brewfatherId: null,
       });
-      const text = `Created misc ingredient [#${created.id}] ${created.name} with amount ${created.amount} ${created.unit}.`;
+      const text = `Created misc ingredient [#${created.id}] ${created.name} with amount ${created.amount} ${created.unit} for use: ${created.use}.`;
       return { content: [{ type: "text", text }] };
     },
   );
