@@ -6,23 +6,33 @@ namespace BrewInventory.Infrastructure.Brewfather.Mappers;
 
 public static class HopMapper
 {
-    public static Hop ToEntity(BrewfatherHop bf) => new()
+    public static Hop ToEntity(BrewfatherHop bf)
     {
-        Name = bf.name,
-        Amount = bf.inventory,
-        BrewfatherId = bf._id,
-        AlphaAcid = bf.alpha,
-        Type = FromBrewfatherType(bf.type),
-        Origin = null,
-        HarvestYear = null
-    };
+        ArgumentNullException.ThrowIfNull(bf);
+
+        return new()
+        {
+            Name = bf.Name,
+            Amount = bf.Inventory ?? 0,
+            BrewfatherId = bf.Id,
+            AlphaAcid = bf.Alpha,
+            Type = bf.Type,
+            Origin = bf.Origin,
+            HarvestYear = bf.Year
+        };
+    }
 
     public static void UpdateEntity(Hop existing, BrewfatherHop bf)
     {
-        existing.Name = bf.name;
-        existing.Amount = bf.inventory;
-        existing.AlphaAcid = bf.alpha;
-        existing.Type = FromBrewfatherType(bf.type);
+        ArgumentNullException.ThrowIfNull(existing);
+        ArgumentNullException.ThrowIfNull(bf);
+
+        existing.Name = bf.Name;
+        existing.Amount = bf.Inventory ?? 0;
+        existing.AlphaAcid = bf.Alpha;
+        existing.Type = bf.Type;
+        existing.Origin = bf.Origin;
+        existing.HarvestYear = bf.Year;
     }
 
     public static string ToBrewfatherType(HopType type) => type switch

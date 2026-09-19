@@ -55,7 +55,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
     public async Task SyncHopsAsync(CancellationToken cancellationToken = default)
     {
         var brewfatherHops = await _brewfatherClient
-            .GetAllInventoryItemsAsync<BrewfatherHop>("inventory/hops", cancellationToken);
+            .GetAllItemsAsync<BrewfatherHop>("inventory/hops", "origin,usage,year", cancellationToken);
 
         var existingHops = await _dbContext.Hops
             .Where(h => h.BrewfatherId != null)
@@ -66,7 +66,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
 
         foreach (var bfHop in brewfatherHops)
         {
-            if (existingHops.TryGetValue(bfHop._id, out var existingHop))
+            if (existingHops.TryGetValue(bfHop.Id, out var existingHop))
             {
                 HopMapper.UpdateEntity(existingHop, bfHop);
                 updatedCount++;

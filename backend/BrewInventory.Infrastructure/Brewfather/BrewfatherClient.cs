@@ -71,7 +71,7 @@ public class BrewfatherClient : IBrewfatherClient
                 if (items.Count == PageLimit)
                 {
                     var lastItem = items[^1];
-                    var idProperty = typeof(T).GetProperty("_id");
+                    var idProperty = typeof(T).GetProperty("Id") ?? typeof(T).GetProperty("_id");
                     if (idProperty != null)
                     {
                         startAfter = idProperty.GetValue(lastItem)?.ToString();

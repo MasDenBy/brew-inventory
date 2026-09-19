@@ -21,7 +21,6 @@
           <th>Origin</th>
           <th>Type</th>
           <th>Alpha Acid (%)</th>
-          <th>Harvest Year</th>
           <th>Amount (g)</th>
           <th class="actions-column">Actions</th>
         </tr>
@@ -31,7 +30,7 @@
           <td class="ingredient-name">
             <div class="name-cell">
               <span class="ingredient-icon">🌿</span>
-              <strong>{{ hop.name }}</strong>
+              <strong>{{ hop.harvestYear ? hop.name + ' ' + hop.harvestYear : hop.name }}</strong>
             </div>
           </td>
           <td class="supplier-cell">{{ hop.origin || '—' }}</td>
@@ -39,7 +38,6 @@
             <span class="badge" [ngClass]="'badge-' + hop.type.toLowerCase()">{{ hop.type }}</span>
           </td>
           <td class="amount-cell">{{ hop.alphaAcid }}%</td>
-          <td class="amount-cell">{{ hop.harvestYear || '—' }}</td>
           <td class="amount-cell">
             <span class="amount-badge">{{ hop.amount }}</span>
           </td>
