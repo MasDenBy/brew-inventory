@@ -18,6 +18,9 @@
         [disabled]="isSyncing">
         <span>{{ isSyncing ? 'Creating...' : 'Create in Brewfather' }}</span>
       </button>
+      <button class="btn btn-danger" (click)="deleteRecipe()">
+        Delete
+      </button>
       <button class="btn btn-secondary" (click)="goBack()">
         <span>←</span> Back to Recipes
       </button>

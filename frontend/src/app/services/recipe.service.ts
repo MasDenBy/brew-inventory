@@ -27,4 +27,8 @@ export class RecipeService {
   syncRecipe(id: number): Observable<SyncRecipeResponse> {
     return this.http.post<SyncRecipeResponse>(`${this.apiUrl}/${id}/sync`, {});
   }
+
+  deleteRecipe(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

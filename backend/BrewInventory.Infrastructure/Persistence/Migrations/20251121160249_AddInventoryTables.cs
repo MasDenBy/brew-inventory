@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BrewInventory.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
+#pragma warning disable MA0048 // File name must match type name
     public partial class AddInventoryTables : Migration
+#pragma warning restore MA0048 // File name must match type name
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
