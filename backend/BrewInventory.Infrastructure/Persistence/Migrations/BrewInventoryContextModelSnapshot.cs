@@ -136,6 +136,9 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Style")
                         .HasColumnType("TEXT");
 

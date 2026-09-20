@@ -28,6 +28,7 @@ internal static class RecipeEndpoints
                 recipe.Name,
                 recipe.BrewfatherId,
                 recipe.Style,
+                recipe.Notes,
                 recipe.RecipeFermentables.Select(rf => new RecipeFermentableDetail(
                     rf.Name,
                     rf.Amount,
@@ -78,7 +79,8 @@ internal static class RecipeEndpoints
             var recipe = new Recipe
             {
                 Name = req.Name,
-                Style = req.Style
+                Style = req.Style,
+                Notes = req.Notes
             };
 
             foreach (var f in req.Fermentables ?? [])

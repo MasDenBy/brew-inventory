@@ -196,6 +196,19 @@
     </div>
   </div>
 
+  <!-- Notes Section -->
+  <div class="ingredient-section" *ngIf="recipe.notes">
+    <h3 class="section-title">
+      <span class="section-icon">📝</span>
+      Notes
+    </h3>
+    <div class="inventory-card">
+      <div class="notes-content">
+        <p>{{ recipe.notes }}</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Empty State -->
   <div *ngIf="recipe.fermentables.length === 0 && recipe.hops.length === 0 && recipe.yeasts.length === 0 && recipe.miscs.length === 0" class="empty-state">
     <p>This recipe has no ingredients defined.</p>

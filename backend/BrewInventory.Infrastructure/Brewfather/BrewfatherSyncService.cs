@@ -145,7 +145,7 @@ public class BrewfatherSyncService : IBrewfatherSyncService
     public async Task SyncRecipesAsync(CancellationToken cancellationToken = default)
     {
         var brewfatherRecipes = await _brewfatherClient
-            .GetAllItemsAsync<BrewfatherRecipe>("recipes", "fermentables,hops,miscs,yeasts", cancellationToken);
+            .GetAllItemsAsync<BrewfatherRecipe>("recipes", "fermentables,hops,miscs,yeasts,notes", cancellationToken);
 
         var existingRecipes = await _dbContext.Recipes
             .Include(r => r.RecipeFermentables)

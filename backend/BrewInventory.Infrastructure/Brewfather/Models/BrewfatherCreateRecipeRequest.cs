@@ -6,5 +6,6 @@ public record BrewfatherCreateRecipeRequest(
     ICollection<BrewfatherRecipeFermentable> fermentables,
     ICollection<BrewfatherRecipeHop> hops,
     ICollection<BrewfatherRecipeMisc> miscs,
-    ICollection<BrewfatherRecipeYeast> yeasts
+    ICollection<BrewfatherRecipeYeast> yeasts,
+    string? notes = null
 );

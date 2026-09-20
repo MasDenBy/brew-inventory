@@ -11,6 +11,7 @@ trim_trailing_whitespace = true
 dotnet_diagnostic.CA1002.severity = error
 dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.MA0004.severity = none
+dotnet_diagnostic.MA0007.severity = none
 
 # Needs to be fixed in the codebase, but we don't want to block the build for now
 dotnet_diagnostic.MA0016.severity = warning

@@ -290,6 +290,17 @@
   font-size: 1.1rem;
 }
 
+.notes-content {
+  padding: 1.25rem 1.5rem;
+}
+
+.notes-content p {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
 @media (max-width: 768px) {
   .inventory-header {
     flex-direction: column;

@@ -5,6 +5,7 @@ public record RecipeDetailsResponse(
     string Name,
     string? BrewfatherId,
     string? Style,
+    string? Notes,
     ICollection<RecipeFermentableDetail> Fermentables,
     ICollection<RecipeHopDetail> Hops,
     ICollection<RecipeYeastDetail> Yeasts,
