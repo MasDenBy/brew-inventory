@@ -155,7 +155,8 @@ public class BrewfatherSyncService : IBrewfatherSyncService
             .Where(r => r.BrewfatherId != null)
             .ToDictionaryAsync(r => r.BrewfatherId!, cancellationToken);
 
-        var brewfatherRecipeIds = brewfatherRecipes.Select(r => r._id).ToHashSet();
+        var brewfatherRecipeIds = brewfatherRecipes.Select(r => r.Id)
+            .ToHashSet(StringComparer.InvariantCulture);
 
         var recipesToDelete = existingRecipes.Values
             .Where(r => !brewfatherRecipeIds.Contains(r.BrewfatherId!))
@@ -166,140 +167,20 @@ public class BrewfatherSyncService : IBrewfatherSyncService
             _dbContext.Recipes.Remove(recipeToDelete);
         }
 
-        var fermentableLookup = await _dbContext.Fermentables
-            .Where(f => f.BrewfatherId != null)
-            .ToDictionaryAsync(f => f.BrewfatherId!, cancellationToken);
-
-        var hopLookup = await _dbContext.Hops
-            .Where(h => h.BrewfatherId != null)
-            .ToDictionaryAsync(h => h.BrewfatherId!, cancellationToken);
-
-        var yeastLookup = await _dbContext.Yeasts
-            .Where(y => y.BrewfatherId != null)
-            .ToDictionaryAsync(y => y.BrewfatherId!, cancellationToken);
-
-        var miscLookup = await _dbContext.Miscs
-            .Where(m => m.BrewfatherId != null)
-            .ToDictionaryAsync(m => m.BrewfatherId!, cancellationToken);
-
-        var addedCount = 0;
-        var updatedCount = 0;
-        var deletedCount = recipesToDelete.Count;
-        var missingIngredientsCount = 0;
-
         foreach (var bfRecipe in brewfatherRecipes)
         {
-            missingIngredientsCount += await EnsureIngredientsExistAsync(
-                bfRecipe,
-                fermentableLookup,
-                hopLookup,
-                yeastLookup,
-                miscLookup,
-                cancellationToken);
-
-            if (existingRecipes.TryGetValue(bfRecipe._id, out var existingRecipe))
+            if (existingRecipes.TryGetValue(bfRecipe.Id, out var existingRecipe))
             {
-                RecipeMapper.UpdateEntity(
-                    existingRecipe,
-                    bfRecipe,
-                    fermentableLookup,
-                    hopLookup,
-                    yeastLookup,
-                    miscLookup);
-                updatedCount++;
+                RecipeMapper.UpdateEntity(existingRecipe, bfRecipe);
             }
             else
             {
-                var newRecipe = RecipeMapper.ToEntity(
-                    bfRecipe,
-                    fermentableLookup,
-                    hopLookup,
-                    yeastLookup,
-                    miscLookup);
+                var newRecipe = RecipeMapper.ToEntity(bfRecipe);
                 _dbContext.Recipes.Add(newRecipe);
-                addedCount++;
             }
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task<int> EnsureIngredientsExistAsync(
-        BrewfatherRecipe bfRecipe,
-        Dictionary<string, Fermentable> fermentableLookup,
-        Dictionary<string, Hop> hopLookup,
-        Dictionary<string, Yeast> yeastLookup,
-        Dictionary<string, Misc> miscLookup,
-        CancellationToken cancellationToken)
-    {
-        var createdCount = 0;
-
-        if (bfRecipe.fermentables != null)
-        {
-            foreach (var bfFermentable in bfRecipe.fermentables)
-            {
-                if (!fermentableLookup.ContainsKey(bfFermentable._id))
-                {
-                    var newFermentable = FermentableMapper.ToEntityFromRecipe(bfFermentable);
-                    newFermentable.Amount = 0;
-                    _dbContext.Fermentables.Add(newFermentable);
-                    fermentableLookup[bfFermentable._id] = newFermentable;
-                    createdCount++;
-                }
-            }
-        }
-
-        if (bfRecipe.hops != null)
-        {
-            foreach (var bfHop in bfRecipe.hops)
-            {
-                if (!hopLookup.ContainsKey(bfHop._id))
-                {
-                    var newHop = HopMapper.ToEntityFromRecipe(bfHop);
-                    newHop.Amount = 0;
-                    _dbContext.Hops.Add(newHop);
-                    hopLookup[bfHop._id] = newHop;
-                    createdCount++;
-                }
-            }
-        }
-
-        if (bfRecipe.yeasts != null)
-        {
-            foreach (var bfYeast in bfRecipe.yeasts)
-            {
-                if (!yeastLookup.ContainsKey(bfYeast._id))
-                {
-                    var newYeast = YeastMapper.ToEntityFromRecipe(bfYeast);
-                    newYeast.Amount = 0;
-                    _dbContext.Yeasts.Add(newYeast);
-                    yeastLookup[bfYeast._id] = newYeast;
-                    createdCount++;
-                }
-            }
-        }
-
-        if (bfRecipe.miscs != null)
-        {
-            foreach (var bfMisc in bfRecipe.miscs)
-            {
-                if (!miscLookup.ContainsKey(bfMisc._id))
-                {
-                    var newMisc = MiscMapper.ToEntityFromRecipe(bfMisc);
-                    newMisc.Amount = 0;
-                    _dbContext.Miscs.Add(newMisc);
-                    miscLookup[bfMisc._id] = newMisc;
-                    createdCount++;
-                }
-            }
-        }
-
-        if (createdCount > 0)
-        {
-            await _dbContext.SaveChangesAsync(cancellationToken);
-        }
-
-        return createdCount;
     }
 
     public async Task<Recipe> PushRecipeToBrewfatherAsync(int recipeId, CancellationToken cancellationToken = default)
@@ -314,15 +195,6 @@ public class BrewfatherSyncService : IBrewfatherSyncService
         if (!string.IsNullOrWhiteSpace(recipe.BrewfatherId))
         {
             throw new InvalidOperationException($"Recipe {recipeId} has already been created in Brewfather.");
-        }
-
-        var missingIngredients = RecipeMapper.GetIngredientsWithoutBrewfatherId(recipe);
-        if (missingIngredients.Count > 0)
-        {
-            var details = string.Join(", ", missingIngredients);
-            throw new InvalidOperationException(
-                $"Recipe contains ingredients that are not yet known to Brewfather: {details}. " +
-                "Sync these ingredients to Brewfather first.");
         }
 
         var brewfatherRequest = RecipeMapper.ToBrewfatherRequest(recipe);

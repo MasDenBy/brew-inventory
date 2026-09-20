@@ -10,11 +10,12 @@ export interface IngredientPurchaseResponse {
 }
 
 export interface IngredientNeedDetail {
-  ingredientId: number;
   name: string;
   type: string;
   amountNeeded: number;
   amountInInventory: number;
   amountToBuy: number;
   unit: string | null;
+  supplier: string | null;
+  productId: string | null;
 }

@@ -44,8 +44,8 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                     b.Property<string>("Origin")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("Percentage")
-                        .HasColumnType("INTEGER");
+                    b.Property<double?>("Percentage")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("Supplier")
                         .HasColumnType("TEXT");
@@ -136,6 +136,9 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Style")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Recipes");
@@ -150,15 +153,29 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                     b.Property<double>("Amount")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("FermentableId")
-                        .HasColumnType("INTEGER");
+                    b.Property<double?>("Color")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Origin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("Potential")
+                        .HasColumnType("REAL");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.Property<string>("Supplier")
+                        .HasColumnType("TEXT");
 
-                    b.HasIndex("FermentableId");
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("RecipeId");
 
@@ -171,18 +188,32 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<double?>("Alpha")
+                        .HasColumnType("REAL");
+
                     b.Property<double>("Amount")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("HopId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Origin")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.Property<double?>("Time")
+                        .HasColumnType("REAL");
 
-                    b.HasIndex("HopId");
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Use")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("RecipeId");
 
@@ -198,15 +229,26 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                     b.Property<double>("Amount")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("MiscId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("RecipeId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.Property<double?>("Time")
+                        .HasColumnType("REAL");
 
-                    b.HasIndex("MiscId");
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Unit")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Use")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("RecipeId");
 
@@ -222,17 +264,31 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                     b.Property<double>("Amount")
                         .HasColumnType("REAL");
 
+                    b.Property<double?>("Attenuation")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Form")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Laboratory")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("RecipeId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("YeastId")
+                    b.Property<int>("Type")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Unit")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RecipeId");
-
-                    b.HasIndex("YeastId");
 
                     b.ToTable("RecipeYeasts");
                 });
@@ -277,57 +333,33 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("BrewInventory.Domain.Entities.RecipeFermentable", b =>
                 {
-                    b.HasOne("BrewInventory.Domain.Entities.Fermentable", "Fermentable")
-                        .WithMany()
-                        .HasForeignKey("FermentableId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("BrewInventory.Domain.Entities.Recipe", "Recipe")
                         .WithMany("RecipeFermentables")
                         .HasForeignKey("RecipeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Fermentable");
-
                     b.Navigation("Recipe");
                 });
 
             modelBuilder.Entity("BrewInventory.Domain.Entities.RecipeHop", b =>
                 {
-                    b.HasOne("BrewInventory.Domain.Entities.Hop", "Hop")
-                        .WithMany()
-                        .HasForeignKey("HopId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("BrewInventory.Domain.Entities.Recipe", "Recipe")
                         .WithMany("RecipeHops")
                         .HasForeignKey("RecipeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hop");
-
                     b.Navigation("Recipe");
                 });
 
             modelBuilder.Entity("BrewInventory.Domain.Entities.RecipeMisc", b =>
                 {
-                    b.HasOne("BrewInventory.Domain.Entities.Misc", "Misc")
-                        .WithMany()
-                        .HasForeignKey("MiscId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("BrewInventory.Domain.Entities.Recipe", "Recipe")
                         .WithMany("RecipeMiscs")
                         .HasForeignKey("RecipeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Misc");
 
                     b.Navigation("Recipe");
                 });
@@ -340,15 +372,7 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BrewInventory.Domain.Entities.Yeast", "Yeast")
-                        .WithMany()
-                        .HasForeignKey("YeastId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Recipe");
-
-                    b.Navigation("Yeast");
                 });
 
             modelBuilder.Entity("BrewInventory.Domain.Entities.Recipe", b =>

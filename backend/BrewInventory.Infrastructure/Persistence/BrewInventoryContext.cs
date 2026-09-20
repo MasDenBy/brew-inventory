@@ -30,23 +30,11 @@ public class BrewInventoryContext(DbContextOptions<BrewInventoryContext> options
             .HasForeignKey(rf => rf.RecipeId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<RecipeFermentable>()
-            .HasOne(rf => rf.Fermentable)
-            .WithMany()
-            .HasForeignKey(rf => rf.FermentableId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         modelBuilder.Entity<RecipeHop>()
             .HasOne(rh => rh.Recipe)
             .WithMany(r => r.RecipeHops)
             .HasForeignKey(rh => rh.RecipeId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<RecipeHop>()
-            .HasOne(rh => rh.Hop)
-            .WithMany()
-            .HasForeignKey(rh => rh.HopId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<RecipeYeast>()
             .HasOne(ry => ry.Recipe)
@@ -54,22 +42,10 @@ public class BrewInventoryContext(DbContextOptions<BrewInventoryContext> options
             .HasForeignKey(ry => ry.RecipeId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<RecipeYeast>()
-            .HasOne(ry => ry.Yeast)
-            .WithMany()
-            .HasForeignKey(ry => ry.YeastId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         modelBuilder.Entity<RecipeMisc>()
             .HasOne(rm => rm.Recipe)
             .WithMany(r => r.RecipeMiscs)
             .HasForeignKey(rm => rm.RecipeId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<RecipeMisc>()
-            .HasOne(rm => rm.Misc)
-            .WithMany()
-            .HasForeignKey(rm => rm.MiscId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

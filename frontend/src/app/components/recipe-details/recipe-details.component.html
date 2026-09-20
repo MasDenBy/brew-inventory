@@ -8,6 +8,7 @@
       <h2 class="page-title">{{ recipe.name }}</h2>
       <p class="page-subtitle" *ngIf="recipe.brewfatherId">Brewfather ID: {{ recipe.brewfatherId }}</p>
       <p class="page-subtitle" *ngIf="!recipe.brewfatherId">Not yet created in Brewfather</p>
+      <p class="page-subtitle" *ngIf="recipe.style">Style: {{ recipe.style }}</p>
     </div>
     <div class="header-actions">
       <button
@@ -41,8 +42,8 @@
               <th>Type</th>
               <th>Amount (kg)</th>
               <th>Supplier</th>
-              <th>Origin</th>
               <th>Color (EBC)</th>
+              <th>Potential</th>
             </tr>
           </thead>
           <tbody>
@@ -57,8 +58,8 @@
                 <span class="amount-badge">{{ fermentable.amount }}</span>
               </td>
               <td class="supplier-cell">{{ fermentable.supplier || '—' }}</td>
-              <td class="supplier-cell">{{ fermentable.origin || '—' }}</td>
-              <td class="amount-cell">{{ fermentable.color }}</td>
+              <td class="amount-cell">{{ fermentable.color || '—' }}</td>
+              <td class="amount-cell">{{ fermentable.potential || '—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -80,9 +81,10 @@
               <th>Name</th>
               <th>Type</th>
               <th>Amount (g)</th>
-              <th>Origin</th>
               <th>Alpha Acid (%)</th>
-              <th>Harvest Year</th>
+              <th>Origin</th>
+              <th>Use</th>
+              <th>Time (min)</th>
             </tr>
           </thead>
           <tbody>
@@ -96,9 +98,10 @@
               <td class="amount-cell">
                 <span class="amount-badge">{{ hop.amount }}</span>
               </td>
+              <td class="amount-cell">{{ hop.alpha || '—' }}</td>
               <td class="supplier-cell">{{ hop.origin || '—' }}</td>
-              <td class="amount-cell">{{ hop.alphaAcid }}</td>
-              <td class="supplier-cell">{{ hop.harvestYear || '—' }}</td>
+              <td>{{ hop.use }}</td>
+              <td class="amount-cell">{{ hop.time || '—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -122,6 +125,8 @@
               <th>Form</th>
               <th>Amount</th>
               <th>Laboratory</th>
+              <th>Attenuation</th>
+              <th>Unit</th>
             </tr>
           </thead>
           <tbody>
@@ -138,7 +143,9 @@
               <td class="amount-cell">
                 <span class="amount-badge">{{ yeast.amount }}</span>
               </td>
-              <td class="supplier-cell">{{ yeast.laboratory }}</td>
+              <td class="supplier-cell">{{ yeast.laboratory || '—' }}</td>
+              <td class="amount-cell">{{ yeast.attenuation || '—' }}</td>
+              <td class="supplier-cell">{{ yeast.unit || '—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -161,6 +168,8 @@
               <th>Type</th>
               <th>Amount</th>
               <th>Unit</th>
+              <th>Use</th>
+              <th>Time (min)</th>
             </tr>
           </thead>
           <tbody>
@@ -174,7 +183,9 @@
               <td class="amount-cell">
                 <span class="amount-badge">{{ misc.amount }}</span>
               </td>
-              <td class="supplier-cell">{{ misc.unit }}</td>
+              <td class="supplier-cell">{{ misc.unit || '—' }}</td>
+              <td>{{ misc.use || '—' }}</td>
+              <td class="amount-cell">{{ misc.time || '—' }}</td>
             </tr>
           </tbody>
         </table>

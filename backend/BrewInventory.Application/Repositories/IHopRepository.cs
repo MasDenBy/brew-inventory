@@ -4,7 +4,7 @@ namespace BrewInventory.Application.Repositories;
 
 public interface IHopRepository
 {
-    Task<List<Hop>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<ICollection<Hop>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<Hop?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<Hop> AddAsync(Hop hop, CancellationToken cancellationToken = default);
     Task UpdateAsync(Hop hop, CancellationToken cancellationToken = default);

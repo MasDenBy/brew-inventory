@@ -46,12 +46,12 @@ public static class HopMapper
 
     public static Hop ToEntityFromRecipe(Models.BrewfatherRecipeHop bf) => new()
     {
-        Name = bf.name,
+        Name = bf.Name,
         Amount = 0,
-        BrewfatherId = bf._id,
-        AlphaAcid = bf.alpha ?? 0,
-        Type = FromBrewfatherType(bf.type),
-        Origin = string.IsNullOrWhiteSpace(bf.origin) ? null : bf.origin,
+        BrewfatherId = bf.Id,
+        AlphaAcid = bf.Alpha ?? 0,
+        Type = FromBrewfatherType(bf.Type.ToString()),
+        Origin = string.IsNullOrWhiteSpace(bf.Origin) ? null : bf.Origin,
         HarvestYear = null
     };
 

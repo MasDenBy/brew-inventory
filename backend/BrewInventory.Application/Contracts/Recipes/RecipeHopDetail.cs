@@ -1,10 +1,10 @@
 namespace BrewInventory.Application.Contracts.Recipes;
 
 public record RecipeHopDetail(
-    int HopId,
     string Name,
-    string Type,
     double Amount,
+    double? Alpha,
+    string Type,
     string? Origin,
-    double AlphaAcid,
-    int? HarvestYear);
+    string Use,
+    double? Time);

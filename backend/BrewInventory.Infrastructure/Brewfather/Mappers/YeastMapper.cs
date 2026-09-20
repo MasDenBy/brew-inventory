@@ -59,12 +59,12 @@ public static class YeastMapper
 
     public static Yeast ToEntityFromRecipe(Models.BrewfatherRecipeYeast bf) => new()
     {
-        Name = bf.name,
+        Name = bf.Name,
         Amount = 0,
-        BrewfatherId = bf._id,
-        Type = FromBrewfatherType(bf.type),
-        Laboratory = string.IsNullOrWhiteSpace(bf.laboratory) ? "Unknown" : bf.laboratory,
-        Form = FromBrewfatherForm(bf.form)
+        BrewfatherId = bf.Id,
+        Type = FromBrewfatherType(bf.Type.ToString()),
+        Laboratory = string.IsNullOrWhiteSpace(bf.Laboratory) ? "Unknown" : bf.Laboratory,
+        Form = FromBrewfatherForm(bf.Form.ToString())
     };
 
     public static YeastType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToLowerInvariant() switch

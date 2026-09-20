@@ -1,12 +1,21 @@
 using BrewInventory.Application.Contracts.IngredientPurchase;
 using BrewInventory.Application.Repositories;
-using BrewInventory.Domain.Entities;
 
 namespace BrewInventory.Application.Services;
 
-public class IngredientPurchaseService(IRecipeRepository recipeRepository, IExcelExporter excelExporter) : IIngredientPurchaseService
+public class IngredientPurchaseService(
+    IRecipeRepository recipeRepository,
+    IFermentableRepository fermentableRepository,
+    IHopRepository hopRepository,
+    IYeastRepository yeastRepository,
+    IMiscRepository miscRepository,
+    IExcelExporter excelExporter) : IIngredientPurchaseService
 {
     private readonly IRecipeRepository _recipeRepository = recipeRepository;
+    private readonly IFermentableRepository _fermentableRepository = fermentableRepository;
+    private readonly IHopRepository _hopRepository = hopRepository;
+    private readonly IYeastRepository _yeastRepository = yeastRepository;
+    private readonly IMiscRepository _miscRepository = miscRepository;
     private readonly IExcelExporter _excelExporter = excelExporter;
 
     public async Task<IngredientPurchaseResponse> CalculateIngredientNeedsAsync(ICollection<int> recipeIds, CancellationToken cancellationToken = default)
@@ -17,10 +26,15 @@ public class IngredientPurchaseService(IRecipeRepository recipeRepository, IExce
             return new IngredientPurchaseResponse([], [], [], []);
         }
 
-        var fermentableNeeds = CalculateFermentableNeeds(recipes);
-        var hopNeeds = CalculateHopNeeds(recipes);
-        var yeastNeeds = CalculateYeastNeeds(recipes);
-        var miscNeeds = CalculateMiscNeeds(recipes);
+        var fermentableInventory = await LoadFermentableInventoryAsync(cancellationToken);
+        var hopInventory = await LoadHopInventoryAsync(cancellationToken);
+        var yeastInventory = await LoadYeastInventoryAsync(cancellationToken);
+        var miscInventory = await LoadMiscInventoryAsync(cancellationToken);
+
+        var fermentableNeeds = CalculateFermentableNeeds(recipes, fermentableInventory);
+        var hopNeeds = CalculateHopNeeds(recipes, hopInventory);
+        var yeastNeeds = CalculateYeastNeeds(recipes, yeastInventory);
+        var miscNeeds = CalculateMiscNeeds(recipes, miscInventory);
 
         return new IngredientPurchaseResponse(fermentableNeeds, hopNeeds, yeastNeeds, miscNeeds);
     }
@@ -33,99 +47,140 @@ public class IngredientPurchaseService(IRecipeRepository recipeRepository, IExce
             return [];
         }
 
-        var fermentableNeeds = CalculateFermentableNeeds(recipes);
-        var hopNeeds = CalculateHopNeeds(recipes);
-        var yeastNeeds = CalculateYeastNeeds(recipes);
-        var miscNeeds = CalculateMiscNeeds(recipes);
+        var fermentableInventory = await LoadFermentableInventoryAsync(cancellationToken);
+        var hopInventory = await LoadHopInventoryAsync(cancellationToken);
+        var yeastInventory = await LoadYeastInventoryAsync(cancellationToken);
+        var miscInventory = await LoadMiscInventoryAsync(cancellationToken);
+
+        var fermentableNeeds = CalculateFermentableNeeds(recipes, fermentableInventory);
+        var hopNeeds = CalculateHopNeeds(recipes, hopInventory);
+        var yeastNeeds = CalculateYeastNeeds(recipes, yeastInventory);
+        var miscNeeds = CalculateMiscNeeds(recipes, miscInventory);
 
         return _excelExporter.GeneratePurchaseList(fermentableNeeds, hopNeeds, yeastNeeds, miscNeeds);
     }
 
-    private static List<IngredientNeedDetail> CalculateFermentableNeeds(List<Recipe> recipes)
+    private async Task<Dictionary<string, (double Amount, string? Supplier)>> LoadFermentableInventoryAsync(CancellationToken cancellationToken)
+    {
+        var items = await _fermentableRepository.GetAllAsync(cancellationToken);
+        return items.Where(f => !string.IsNullOrWhiteSpace(f.Name))
+                    .GroupBy(f => f.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => (
+                            g.Sum(f => f.Amount),
+                            g.First().Supplier),
+                        StringComparer.InvariantCultureIgnoreCase);
+    }
+
+    private async Task<Dictionary<string, double>> LoadHopInventoryAsync(CancellationToken cancellationToken)
+    {
+        var items = await _hopRepository.GetAllAsync(cancellationToken);
+        return items.Where(h => !string.IsNullOrWhiteSpace(h.Name))
+                    .GroupBy(h => h.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToDictionary(g => g.Key, g => g.Sum(h => h.Amount), StringComparer.InvariantCultureIgnoreCase);
+    }
+
+    private async Task<Dictionary<string, (double Amount, string? ProductId)>> LoadYeastInventoryAsync(CancellationToken cancellationToken)
+    {
+        var items = await _yeastRepository.GetAllAsync(cancellationToken);
+        return items.Where(y => !string.IsNullOrWhiteSpace(y.Name))
+                    .GroupBy(y => y.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToDictionary(g => g.Key, g => (g.Sum(y => y.Amount), g.First().ProductId), StringComparer.InvariantCultureIgnoreCase);
+    }
+
+    private async Task<Dictionary<string, double>> LoadMiscInventoryAsync(CancellationToken cancellationToken)
+    {
+        var items = await _miscRepository.GetAllAsync(cancellationToken);
+        return items.Where(m => !string.IsNullOrWhiteSpace(m.Name))
+                    .GroupBy(m => m.Name, StringComparer.InvariantCultureIgnoreCase)
+                    .ToDictionary(g => g.Key, g => g.Sum(m => m.Amount), StringComparer.InvariantCultureIgnoreCase);
+    }
+
+    private static List<IngredientNeedDetail> CalculateFermentableNeeds(IEnumerable<Domain.Entities.Recipe> recipes, Dictionary<string, (double Amount, string? Supplier)> inventory)
     {
         return recipes
             .SelectMany(r => r.RecipeFermentables)
-            .GroupBy(rf => rf.FermentableId)
-            .Select(g => new
+            .GroupBy(rf => rf.Name, StringComparer.InvariantCultureIgnoreCase)
+            .Select(g =>
             {
-                IngredientId = g.Key,
-                Fermentable = g.First().Fermentable,
-                TotalNeeded = g.Sum(rf => rf.Amount)
+                var name = g.Key;
+                var amountNeeded = g.Sum(rf => rf.Amount);
+                inventory.TryGetValue(name, out var inv);
+                var supplier = g.First().Supplier ?? inv.Supplier;
+                return new IngredientNeedDetail(
+                    name,
+                    g.First().Type.ToString(),
+                    amountNeeded,
+                    inv.Amount,
+                    Math.Max(0, amountNeeded - inv.Amount),
+                    "kg",
+                    supplier);
             })
-            .Select(item => new IngredientNeedDetail(
-                item.IngredientId,
-                item.Fermentable.Name,
-                item.Fermentable.Type.ToString(),
-                item.TotalNeeded,
-                item.Fermentable.Amount,
-                Math.Max(0, item.TotalNeeded - item.Fermentable.Amount),
-                "kg"))
             .ToList();
     }
 
-    private static List<IngredientNeedDetail> CalculateHopNeeds(List<Recipe> recipes)
+    private static List<IngredientNeedDetail> CalculateHopNeeds(IEnumerable<Domain.Entities.Recipe> recipes, Dictionary<string, double> inventory)
     {
         return recipes
             .SelectMany(r => r.RecipeHops)
-            .GroupBy(rh => rh.HopId)
-            .Select(g => new
+            .GroupBy(rh => rh.Name, StringComparer.InvariantCultureIgnoreCase)
+            .Select(g =>
             {
-                IngredientId = g.Key,
-                Hop = g.First().Hop,
-                TotalNeeded = g.Sum(rh => rh.Amount)
+                var name = g.Key;
+                var amountNeeded = g.Sum(rh => rh.Amount);
+                inventory.TryGetValue(name, out var amountInInventory);
+                return new IngredientNeedDetail(
+                    name,
+                    g.First().Type.ToString(),
+                    amountNeeded,
+                    amountInInventory,
+                    Math.Max(0, amountNeeded - amountInInventory),
+                    "g");
             })
-            .Select(item => new IngredientNeedDetail(
-                item.IngredientId,
-                item.Hop.Name,
-                item.Hop.Type.ToString(),
-                item.TotalNeeded,
-                item.Hop.Amount,
-                Math.Max(0, item.TotalNeeded - item.Hop.Amount),
-                "g"))
             .ToList();
     }
 
-    private static List<IngredientNeedDetail> CalculateYeastNeeds(List<Recipe> recipes)
+    private static List<IngredientNeedDetail> CalculateYeastNeeds(IEnumerable<Domain.Entities.Recipe> recipes, Dictionary<string, (double Amount, string? ProductId)> inventory)
     {
         return recipes
             .SelectMany(r => r.RecipeYeasts)
-            .GroupBy(ry => ry.YeastId)
-            .Select(g => new
+            .GroupBy(ry => ry.Name, StringComparer.InvariantCultureIgnoreCase)
+            .Select(g =>
             {
-                IngredientId = g.Key,
-                Yeast = g.First().Yeast,
-                TotalNeeded = g.Sum(ry => ry.Amount)
+                var name = g.Key;
+                var amountNeeded = g.Sum(ry => ry.Amount);
+                inventory.TryGetValue(name, out var inv);
+                return new IngredientNeedDetail(
+                    name,
+                    g.First().Type.ToString(),
+                    amountNeeded,
+                    inv.Amount,
+                    Math.Max(0, amountNeeded - inv.Amount),
+                    g.First().Unit,
+                    ProductId: inv.ProductId);
             })
-            .Select(item => new IngredientNeedDetail(
-                item.IngredientId,
-                item.Yeast.Name,
-                item.Yeast.Type.ToString(),
-                item.TotalNeeded,
-                item.Yeast.Amount,
-                Math.Max(0, item.TotalNeeded - item.Yeast.Amount),
-                item.Yeast.Form.ToString()))
             .ToList();
     }
 
-    private static List<IngredientNeedDetail> CalculateMiscNeeds(List<Recipe> recipes)
+    private static List<IngredientNeedDetail> CalculateMiscNeeds(IEnumerable<Domain.Entities.Recipe> recipes, Dictionary<string, double> inventory)
     {
         return recipes
             .SelectMany(r => r.RecipeMiscs)
-            .GroupBy(rm => rm.MiscId)
-            .Select(g => new
+            .GroupBy(rm => rm.Name, StringComparer.InvariantCultureIgnoreCase)
+            .Select(g =>
             {
-                IngredientId = g.Key,
-                Misc = g.First().Misc,
-                TotalNeeded = g.Sum(rm => rm.Amount)
+                var name = g.Key;
+                var amountNeeded = g.Sum(rm => rm.Amount);
+                inventory.TryGetValue(name, out var amountInInventory);
+                return new IngredientNeedDetail(
+                    name,
+                    g.First().Type.ToString(),
+                    amountNeeded,
+                    amountInInventory,
+                    Math.Max(0, amountNeeded - amountInInventory),
+                    g.First().Unit);
             })
-            .Select(item => new IngredientNeedDetail(
-                item.IngredientId,
-                item.Misc.Name,
-                item.Misc.Type.ToString(),
-                item.TotalNeeded,
-                item.Misc.Amount,
-                Math.Max(0, item.TotalNeeded - item.Misc.Amount),
-                item.Misc.Unit.ToString()))
             .ToList();
     }
 }

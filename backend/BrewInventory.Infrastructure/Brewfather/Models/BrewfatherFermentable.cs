@@ -11,7 +11,7 @@ public record BrewfatherFermentable
     public string Name { get; init; } = null!;
     public FermentableType Type { get; init; }
     public string? GrainCategory { get; init; }
-    public int? Percentage { get; init; }
+    public double? Percentage { get; init; }
     public double Color { get; init; }
     public double Lovibond { get; init; }
     public string Origin { get; init; } = null!;

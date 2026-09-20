@@ -55,12 +55,12 @@ public static class MiscMapper
 
     public static Misc ToEntityFromRecipe(Models.BrewfatherRecipeMisc bf) => new()
     {
-        Name = bf.name,
+        Name = bf.Name,
         Amount = 0,
-        BrewfatherId = bf._id,
-        Type = FromBrewfatherType(bf.type),
-        Unit = bf.unit ?? "g",
-        Use = bf.use ?? "",
+        BrewfatherId = bf.Id,
+        Type = FromBrewfatherType(bf.Type.ToString()),
+        Unit = bf.Unit ?? "g",
+        Use = bf.Use ?? "",
     };
 
     public static MiscType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToUpperInvariant() switch

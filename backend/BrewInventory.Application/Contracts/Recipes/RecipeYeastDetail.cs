@@ -1,9 +1,10 @@
 namespace BrewInventory.Application.Contracts.Recipes;
 
 public record RecipeYeastDetail(
-    int YeastId,
     string Name,
+    double Amount,
+    string? Laboratory,
     string Type,
     string Form,
-    double Amount,
-    string Laboratory);
+    double? Attenuation,
+    string? Unit);

@@ -13,7 +13,7 @@ public class YeastRepository : IYeastRepository
         _context = context;
     }
 
-    public async Task<List<Yeast>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ICollection<Yeast>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Yeasts.ToListAsync(cancellationToken);
     }

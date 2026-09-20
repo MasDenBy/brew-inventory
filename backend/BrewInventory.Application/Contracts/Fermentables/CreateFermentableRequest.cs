@@ -9,5 +9,5 @@ public record CreateFermentableRequest(
     string? Type,
     double Color,
     string? GrainCategory,
-    int? Percentage,
+    double? Percentage,
     double Lovibond);

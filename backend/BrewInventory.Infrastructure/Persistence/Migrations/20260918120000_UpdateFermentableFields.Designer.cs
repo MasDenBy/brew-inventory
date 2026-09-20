@@ -48,8 +48,8 @@ namespace BrewInventory.Infrastructure.Persistence.Migrations
                     b.Property<string>("Origin")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("Percentage")
-                        .HasColumnType("INTEGER");
+                    b.Property<double?>("Percentage")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("Supplier")
                         .HasColumnType("TEXT");

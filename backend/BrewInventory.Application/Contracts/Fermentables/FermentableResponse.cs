@@ -10,5 +10,5 @@ public record FermentableResponse(
     string? Type,
     double Color,
     string? GrainCategory,
-    int? Percentage,
+    double? Percentage,
     double Lovibond);

@@ -53,13 +53,13 @@ public static class FermentableMapper
 
     public static Fermentable ToEntityFromRecipe(Models.BrewfatherRecipeFermentable bf) => new()
     {
-        Name = bf.name,
+        Name = bf.Name,
         Amount = 0,
-        BrewfatherId = bf._id,
-        Supplier = bf.supplier,
-        Origin = bf.origin,
-        Type = FromBrewfatherType(bf.type),
-        Color = bf.color ?? 0
+        BrewfatherId = bf.Id,
+        Supplier = bf.Supplier,
+        Origin = bf.Origin,
+        Type = FromBrewfatherType(bf.Type.ToString()),
+        Color = bf.Color ?? 0
     };
 
     public static FermentableType FromBrewfatherType(string? brewfatherType) => brewfatherType?.ToLowerInvariant() switch

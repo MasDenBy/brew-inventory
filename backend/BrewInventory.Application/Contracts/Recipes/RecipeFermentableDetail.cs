@@ -1,10 +1,10 @@
 namespace BrewInventory.Application.Contracts.Recipes;
 
 public record RecipeFermentableDetail(
-    int FermentableId,
     string Name,
-    string Type,
     double Amount,
+    string Type,
     string? Supplier,
     string? Origin,
-    double Color);
+    double? Color,
+    double? Potential);

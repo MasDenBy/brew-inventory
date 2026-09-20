@@ -27,38 +27,41 @@ internal static class RecipeEndpoints
                 recipe.Id,
                 recipe.Name,
                 recipe.BrewfatherId,
+                recipe.Style,
                 recipe.RecipeFermentables.Select(rf => new RecipeFermentableDetail(
-                    rf.Fermentable.Id,
-                    rf.Fermentable.Name,
-                    rf.Fermentable.Type.ToString(),
+                    rf.Name,
                     rf.Amount,
-                    rf.Fermentable.Supplier,
-                    rf.Fermentable.Origin,
-                    rf.Fermentable.Color
+                    rf.Type.ToString(),
+                    rf.Supplier,
+                    rf.Origin,
+                    rf.Color,
+                    rf.Potential
                 )).ToList(),
                 recipe.RecipeHops.Select(rh => new RecipeHopDetail(
-                    rh.Hop.Id,
-                    rh.Hop.Name,
-                    rh.Hop.Type.ToString(),
+                    rh.Name,
                     rh.Amount,
-                    rh.Hop.Origin,
-                    rh.Hop.AlphaAcid,
-                    rh.Hop.HarvestYear
+                    rh.Alpha,
+                    rh.Type.ToString(),
+                    rh.Origin,
+                    rh.Use.ToString(),
+                    rh.Time
                 )).ToList(),
                 recipe.RecipeYeasts.Select(ry => new RecipeYeastDetail(
-                    ry.Yeast.Id,
-                    ry.Yeast.Name,
-                    ry.Yeast.Type.ToString(),
-                    ry.Yeast.Form.ToString(),
+                    ry.Name,
                     ry.Amount,
-                    ry.Yeast.Laboratory
+                    ry.Laboratory,
+                    ry.Type.ToString(),
+                    ry.Form.ToString(),
+                    ry.Attenuation,
+                    ry.Unit
                 )).ToList(),
                 recipe.RecipeMiscs.Select(rm => new RecipeMiscDetail(
-                    rm.Misc.Id,
-                    rm.Misc.Name,
-                    rm.Misc.Type.ToString(),
-                    rm.Misc.Unit.ToString(),
-                    rm.Amount
+                    rm.Name,
+                    rm.Amount,
+                    rm.Type.ToString(),
+                    rm.Unit,
+                    rm.Use,
+                    rm.Time
                 )).ToList()
             );
 
@@ -72,56 +75,64 @@ internal static class RecipeEndpoints
                 return Results.BadRequest(new { message = "Recipe name is required." });
             }
 
-            var fermentables = req.Fermentables ?? [];
-            var hops = req.Hops ?? [];
-            var yeasts = req.Yeasts ?? [];
-            var miscs = req.Miscs ?? [];
-
-            var missingIds = await FindMissingIngredientIdsAsync(repo, fermentables, hops, yeasts, miscs, ct);
-            if (missingIds.Count > 0)
+            var recipe = new Recipe
             {
-                return Results.BadRequest(new
-                {
-                    message = "One or more referenced ingredients do not exist.",
-                    missingIds
-                });
-            }
+                Name = req.Name,
+                Style = req.Style
+            };
 
-            var recipe = new Recipe { Name = req.Name };
-
-            foreach (var f in fermentables)
+            foreach (var f in req.Fermentables ?? [])
             {
                 recipe.RecipeFermentables.Add(new RecipeFermentable
                 {
-                    FermentableId = f.FermentableId,
-                    Amount = f.Amount
+                    Name = f.Name,
+                    Amount = f.Amount,
+                    Type = f.Type,
+                    Supplier = f.Supplier,
+                    Origin = f.Origin,
+                    Color = f.Color,
+                    Potential = f.Potential
                 });
             }
 
-            foreach (var h in hops)
+            foreach (var h in req.Hops ?? [])
             {
                 recipe.RecipeHops.Add(new RecipeHop
                 {
-                    HopId = h.HopId,
-                    Amount = h.Amount
+                    Name = h.Name,
+                    Amount = h.Amount,
+                    Alpha = h.Alpha,
+                    Type = h.Type,
+                    Origin = h.Origin,
+                    Use = h.Use,
+                    Time = h.Time
                 });
             }
 
-            foreach (var y in yeasts)
+            foreach (var y in req.Yeasts ?? [])
             {
                 recipe.RecipeYeasts.Add(new RecipeYeast
                 {
-                    YeastId = y.YeastId,
-                    Amount = y.Amount
+                    Name = y.Name,
+                    Amount = y.Amount,
+                    Laboratory = y.Laboratory,
+                    Type = y.Type,
+                    Form = y.Form,
+                    Attenuation = y.Attenuation,
+                    Unit = y.Unit
                 });
             }
 
-            foreach (var m in miscs)
+            foreach (var m in req.Miscs ?? [])
             {
                 recipe.RecipeMiscs.Add(new RecipeMisc
                 {
-                    MiscId = m.MiscId,
-                    Amount = m.Amount
+                    Name = m.Name,
+                    Amount = m.Amount,
+                    Type = m.Type,
+                    Unit = m.Unit,
+                    Use = m.Use,
+                    Time = m.Time
                 });
             }
 
@@ -147,46 +158,5 @@ internal static class RecipeEndpoints
                 return Results.BadRequest(new { message = ex.Message });
             }
         });
-    }
-
-    private static async Task<List<string>> FindMissingIngredientIdsAsync(
-        IRecipeRepository repo,
-        ICollection<CreateRecipeFermentableRequest> fermentables,
-        ICollection<CreateRecipeHopRequest> hops,
-        ICollection<CreateRecipeYeastRequest> yeasts,
-        ICollection<CreateRecipeMiscRequest> miscs,
-        CancellationToken ct)
-    {
-        var missing = new List<string>();
-
-        var fermentableIds = fermentables.Select(f => f.FermentableId).Distinct().ToList();
-        if (fermentableIds.Count > 0)
-        {
-            var foundIds = await repo.GetExistingFermentableIdsAsync(fermentableIds, ct);
-            missing.AddRange(fermentableIds.Except(foundIds).Select(id => $"Fermentable {id}"));
-        }
-
-        var hopIds = hops.Select(h => h.HopId).Distinct().ToList();
-        if (hopIds.Count > 0)
-        {
-            var foundIds = await repo.GetExistingHopIdsAsync(hopIds, ct);
-            missing.AddRange(hopIds.Except(foundIds).Select(id => $"Hop {id}"));
-        }
-
-        var yeastIds = yeasts.Select(y => y.YeastId).Distinct().ToList();
-        if (yeastIds.Count > 0)
-        {
-            var foundIds = await repo.GetExistingYeastIdsAsync(yeastIds, ct);
-            missing.AddRange(yeastIds.Except(foundIds).Select(id => $"Yeast {id}"));
-        }
-
-        var miscIds = miscs.Select(m => m.MiscId).Distinct().ToList();
-        if (miscIds.Count > 0)
-        {
-            var foundIds = await repo.GetExistingMiscIdsAsync(miscIds, ct);
-            missing.AddRange(miscIds.Except(foundIds).Select(id => $"Misc {id}"));
-        }
-
-        return missing;
     }
 }

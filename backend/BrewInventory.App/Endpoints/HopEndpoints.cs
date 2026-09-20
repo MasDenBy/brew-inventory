@@ -1,8 +1,7 @@
-using BrewInventory.App.Endpoints;
 using BrewInventory.Application.Contracts.Hops;
+using BrewInventory.Application.Repositories;
 using BrewInventory.Domain.Entities;
 using BrewInventory.Domain.Entities.Enums;
-using BrewInventory.Application.Repositories;
 
 namespace BrewInventory.App.Endpoints;
 
