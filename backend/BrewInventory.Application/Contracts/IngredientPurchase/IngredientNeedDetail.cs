@@ -1,10 +1,11 @@
 namespace BrewInventory.Application.Contracts.IngredientPurchase;
 
 public record IngredientNeedDetail(
-    int IngredientId,
     string Name,
     string Type,
-    decimal AmountNeeded,
-    decimal AmountInInventory,
-    decimal AmountToBuy,
-    string? Unit);
+    double AmountNeeded,
+    double AmountInInventory,
+    double AmountToBuy,
+    string? Unit,
+    string? Supplier = null,
+    string? ProductId = null);

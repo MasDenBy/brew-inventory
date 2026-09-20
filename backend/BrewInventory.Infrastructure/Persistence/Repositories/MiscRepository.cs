@@ -13,7 +13,7 @@ public class MiscRepository : IMiscRepository
         _context = context;
     }
 
-    public async Task<List<Misc>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ICollection<Misc>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Miscs.ToListAsync(cancellationToken);
     }

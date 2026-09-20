@@ -47,7 +47,6 @@ export class HopFormComponent implements OnInit {
       alphaAcid: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       harvestYear: [''],
       amount: [0, [Validators.required, Validators.min(0)]],
-      bestBefore: [''],
       brewfatherId: ['']
     });
   }
@@ -62,7 +61,6 @@ export class HopFormComponent implements OnInit {
           alphaAcid: hop.alphaAcid,
           harvestYear: hop.harvestYear || '',
           amount: hop.amount,
-          bestBefore: hop.bestBefore || '',
           brewfatherId: hop.brewfatherId || ''
         });
       },
@@ -87,7 +85,6 @@ export class HopFormComponent implements OnInit {
         alphaAcid: formValue.alphaAcid,
         harvestYear: formValue.harvestYear || null,
         amount: formValue.amount,
-        bestBefore: formValue.bestBefore || null,
         brewfatherId: formValue.brewfatherId || null
       };
 

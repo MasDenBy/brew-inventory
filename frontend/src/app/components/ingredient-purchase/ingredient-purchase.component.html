@@ -50,9 +50,7 @@
   <div class="results-header">
     <h3 class="section-title">Ingredient Purchase List</h3>
     <div class="results-actions">
-      <button class="btn btn-secondary" (click)="resetCalculation()">
-         Back to Recipe Selection
-      </button>
+      <button class="btn btn-secondary" (click)="resetCalculation()">Back to Recipe Selection</button>
       <button class="btn btn-primary" (click)="exportPurchaseNeeds()" [disabled]="isExporting">
         {{ isExporting ? 'Exporting...' : 'Export Excel' }}
       </button>
@@ -60,7 +58,7 @@
   </div>
 
   <div *ngIf="!hasAnyIngredients()" class="empty-state">
-    <p>No ingredients need to be purchased. You have everything in stock!</p>
+    <p>No ingredients found in the selected recipes.</p>
   </div>
 
   <div *ngIf="hasAnyIngredients()">
@@ -81,13 +79,13 @@
           <tbody>
             <tr *ngFor="let item of purchaseData.fermentables" class="table-row">
               <td class="ingredient-name">
-                <strong>{{ item.name }}</strong>
+                <strong>{{ item.supplier ? item.name + ' (' + item.supplier + ')' : item.name }}</strong>
               </td>
               <td>{{ item.type }}</td>
-              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'kg' }}</td>
-              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'kg' }}</td>
+              <td class="number-column">{{ item.amountNeeded | number:'1.0-2' }} {{ item.unit || 'kg' }}</td>
+              <td class="number-column">{{ item.amountInInventory | number:'1.0-2' }} {{ item.unit || 'kg' }}</td>
               <td class="number-column highlight-amount">
-                <strong>{{ item.amountToBuy }} {{ item.unit || 'kg' }}</strong>
+                <strong>{{ item.amountToBuy | number:'1.0-2' }} {{ item.unit || 'kg' }}</strong>
               </td>
             </tr>
           </tbody>
@@ -115,10 +113,10 @@
                 <strong>{{ item.name }}</strong>
               </td>
               <td>{{ item.type }}</td>
-              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'g' }}</td>
-              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'g' }}</td>
+              <td class="number-column">{{ item.amountNeeded | number:'1.0-2' }} {{ item.unit || 'g' }}</td>
+              <td class="number-column">{{ item.amountInInventory | number:'1.0-2' }} {{ item.unit || 'g' }}</td>
               <td class="number-column highlight-amount">
-                <strong>{{ item.amountToBuy }} {{ item.unit || 'g' }}</strong>
+                <strong>{{ item.amountToBuy | number:'1.0-2' }} {{ item.unit || 'g' }}</strong>
               </td>
             </tr>
           </tbody>
@@ -143,13 +141,13 @@
           <tbody>
             <tr *ngFor="let item of purchaseData.yeasts" class="table-row">
               <td class="ingredient-name">
-                <strong>{{ item.name }}</strong>
+                <strong>{{ item.productId ? item.productId + ' - ' + item.name : item.name }}</strong>
               </td>
               <td>{{ item.type }}</td>
-              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'pkg' }}</td>
-              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'pkg' }}</td>
+              <td class="number-column">{{ item.amountNeeded | number:'1.0-2' }} {{ item.unit || 'pkg' }}</td>
+              <td class="number-column">{{ item.amountInInventory | number:'1.0-2' }} {{ item.unit || 'pkg' }}</td>
               <td class="number-column highlight-amount">
-                <strong>{{ item.amountToBuy }} {{ item.unit || 'pkg' }}</strong>
+                <strong>{{ item.amountToBuy | number:'1.0-2' }} {{ item.unit || 'pkg' }}</strong>
               </td>
             </tr>
           </tbody>
@@ -177,10 +175,10 @@
                 <strong>{{ item.name }}</strong>
               </td>
               <td>{{ item.type }}</td>
-              <td class="number-column">{{ item.amountNeeded }} {{ item.unit || 'g' }}</td>
-              <td class="number-column">{{ item.amountInInventory }} {{ item.unit || 'g' }}</td>
+              <td class="number-column">{{ item.amountNeeded | number:'1.0-2' }} {{ item.unit || 'g' }}</td>
+              <td class="number-column">{{ item.amountInInventory | number:'1.0-2' }} {{ item.unit || 'g' }}</td>
               <td class="number-column highlight-amount">
-                <strong>{{ item.amountToBuy }} {{ item.unit || 'g' }}</strong>
+                <strong>{{ item.amountToBuy | number:'1.0-2' }} {{ item.unit || 'g' }}</strong>
               </td>
             </tr>
           </tbody>

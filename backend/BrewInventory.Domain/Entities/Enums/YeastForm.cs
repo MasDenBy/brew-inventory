@@ -1,9 +1,13 @@
+using System.Text.Json.Serialization;
+
 namespace BrewInventory.Domain.Entities.Enums;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum YeastForm
 {
-    Liquid,
     Dry,
+    Liquid,
+    Slant,
     Culture,
     Slurry
 }

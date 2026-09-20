@@ -9,7 +9,6 @@ export interface Hop {
   id: number;
   name: string;
   amount: number;
-  bestBefore: string | null;
   brewfatherId: string | null;
   origin: string | null;
   type: HopType;

@@ -1,5 +1,15 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow",
+      "*.props": "deny",
+      ".editorconfig": "deny"
+    }
+  },
   "mcp": {
     "servers": {
       "brew_inventory": {
@@ -13,19 +23,19 @@
       }
     }
   },
-    "provider": {
+  "provider": {
     "lmstudio": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "LM Studio (local)",
       "options": {
         "baseURL": "http://127.0.0.1:1234/v1"
       },
-	"models": {
-		"google/gemma-4-e4b": {
-			"name": "google/gemma-4-e4b",
-            "plan_enabled": true
+      "models": {
+        "google/gemma-4-e4b": {
+          "name": "google/gemma-4-e4b",
+          "plan_enabled": true
         }
-    }
+      }
     }
   }
 }

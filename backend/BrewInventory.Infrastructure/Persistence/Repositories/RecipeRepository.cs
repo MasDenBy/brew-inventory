@@ -13,7 +13,7 @@ public class RecipeRepository : IRecipeRepository
         _context = context;
     }
 
-    public async Task<List<Recipe>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ICollection<Recipe>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Recipes.ToListAsync(cancellationToken);
     }
@@ -22,27 +22,19 @@ public class RecipeRepository : IRecipeRepository
     {
         return await _context.Recipes
             .Include(r => r.RecipeFermentables)
-                .ThenInclude(rf => rf.Fermentable)
             .Include(r => r.RecipeHops)
-                .ThenInclude(rh => rh.Hop)
             .Include(r => r.RecipeYeasts)
-                .ThenInclude(ry => ry.Yeast)
             .Include(r => r.RecipeMiscs)
-                .ThenInclude(rm => rm.Misc)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
-    public async Task<List<Recipe>> GetByIdsAsync(ICollection<int> ids, CancellationToken cancellationToken = default)
+    public async Task<ICollection<Recipe>> GetByIdsAsync(ICollection<int> ids, CancellationToken cancellationToken = default)
     {
         return await _context.Recipes
             .Include(r => r.RecipeFermentables)
-                .ThenInclude(rf => rf.Fermentable)
             .Include(r => r.RecipeHops)
-                .ThenInclude(rh => rh.Hop)
             .Include(r => r.RecipeYeasts)
-                .ThenInclude(ry => ry.Yeast)
             .Include(r => r.RecipeMiscs)
-                .ThenInclude(rm => rm.Misc)
             .Where(r => ids.Contains(r.Id))
             .ToListAsync(cancellationToken);
     }
@@ -63,37 +55,5 @@ public class RecipeRepository : IRecipeRepository
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<List<int>> GetExistingFermentableIdsAsync(ICollection<int> ids, CancellationToken cancellationToken = default)
-    {
-        return await _context.Fermentables
-            .Where(f => ids.Contains(f.Id))
-            .Select(f => f.Id)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<List<int>> GetExistingHopIdsAsync(ICollection<int> ids, CancellationToken cancellationToken = default)
-    {
-        return await _context.Hops
-            .Where(h => ids.Contains(h.Id))
-            .Select(h => h.Id)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<List<int>> GetExistingYeastIdsAsync(ICollection<int> ids, CancellationToken cancellationToken = default)
-    {
-        return await _context.Yeasts
-            .Where(y => ids.Contains(y.Id))
-            .Select(y => y.Id)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<List<int>> GetExistingMiscIdsAsync(ICollection<int> ids, CancellationToken cancellationToken = default)
-    {
-        return await _context.Miscs
-            .Where(m => ids.Contains(m.Id))
-            .Select(m => m.Id)
-            .ToListAsync(cancellationToken);
     }
 }

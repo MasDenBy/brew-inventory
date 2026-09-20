@@ -22,7 +22,6 @@
           <th>Type</th>
           <th>Form</th>
           <th>Amount</th>
-          <th>Best Before</th>
           <th class="actions-column">Actions</th>
         </tr>
       </thead>
@@ -31,7 +30,7 @@
           <td class="ingredient-name">
             <div class="name-cell">
               <span class="ingredient-icon">🧫</span>
-              <strong>{{ yeast.name }}</strong>
+              <strong>{{ yeast.productId ? yeast.productId + ' - ' + yeast.name : yeast.name }}</strong>
             </div>
           </td>
           <td class="supplier-cell">{{ yeast.laboratory }}</td>
@@ -42,9 +41,8 @@
             <span class="badge" [ngClass]="'badge-' + yeast.form.toLowerCase()">{{ yeast.form }}</span>
           </td>
           <td class="amount-cell">
-            <span class="amount-badge">{{ yeast.amount }}</span>
+            <span class="amount-badge">{{ yeast.amount }}{{ yeast.unit ? ' ' + yeast.unit : '' }}</span>
           </td>
-          <td class="date-cell">{{ yeast.bestBefore || '—' }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
               <button class="btn-icon btn-edit" (click)="editYeast(yeast.id)" title="Edit">

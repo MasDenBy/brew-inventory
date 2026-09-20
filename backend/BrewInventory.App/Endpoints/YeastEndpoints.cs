@@ -15,8 +15,8 @@ internal static class YeastEndpoints
         {
             var items = await repo.GetAllAsync(ct);
             var responses = items.Select(y => new YeastResponse(
-                y.Id, y.Name, y.Amount, y.BestBefore, y.BrewfatherId,
-                y.Labaratory, y.Type.ToString(), y.Form.ToString())).ToList();
+                y.Id, y.Name, y.Amount, y.BrewfatherId,
+                y.Laboratory, y.Type.ToString(), y.Form.ToString(), y.Unit, y.ProductId)).ToList();
             return Results.Ok(responses);
         });
 
@@ -26,8 +26,8 @@ internal static class YeastEndpoints
             return y is null
                 ? Results.NotFound()
                 : Results.Ok(new YeastResponse(
-                    y.Id, y.Name, y.Amount, y.BestBefore, y.BrewfatherId,
-                    y.Labaratory, y.Type.ToString(), y.Form.ToString()));
+                    y.Id, y.Name, y.Amount, y.BrewfatherId,
+                    y.Laboratory, y.Type.ToString(), y.Form.ToString(), y.Unit, y.ProductId));
         });
 
         group.MapPost("/", async (CreateYeastRequest req, IYeastRepository repo, CancellationToken ct) =>
@@ -36,16 +36,17 @@ internal static class YeastEndpoints
             {
                 Name = req.Name,
                 Amount = req.Amount,
-                BestBefore = req.BestBefore,
                 BrewfatherId = req.BrewfatherId,
-                Labaratory = req.Laboratory
+                Laboratory = req.Laboratory,
+                Unit = req.Unit,
+                ProductId = req.ProductId
             };
             if (Enum.TryParse(typeof(YeastType), req.Type, true, out var yt)) entity.Type = (YeastType)yt;
             if (Enum.TryParse(typeof(YeastForm), req.Form, true, out var yf)) entity.Form = (YeastForm)yf;
 
             await repo.AddAsync(entity, ct);
 
-            var resp = new YeastResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Labaratory, entity.Type.ToString(), entity.Form.ToString());
+            var resp = new YeastResponse(entity.Id, entity.Name, entity.Amount, entity.BrewfatherId, entity.Laboratory, entity.Type.ToString(), entity.Form.ToString(), entity.Unit, entity.ProductId);
             return Results.Created($"/api/yeasts/{entity.Id}", resp);
         });
 
@@ -56,9 +57,10 @@ internal static class YeastEndpoints
 
             entity.Name = req.Name;
             entity.Amount = req.Amount;
-            entity.BestBefore = req.BestBefore;
             entity.BrewfatherId = req.BrewfatherId;
-            entity.Labaratory = req.Laboratory;
+            entity.Laboratory = req.Laboratory;
+            entity.Unit = req.Unit;
+            entity.ProductId = req.ProductId;
             if (Enum.TryParse(typeof(YeastType), req.Type, true, out var yt)) entity.Type = (YeastType)yt;
             if (Enum.TryParse(typeof(YeastForm), req.Form, true, out var yf)) entity.Form = (YeastForm)yf;
 

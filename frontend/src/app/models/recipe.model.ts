@@ -8,6 +8,7 @@ export interface RecipeDetailsResponse {
   id: number;
   name: string;
   brewfatherId?: string;
+  style?: string;
   fermentables: RecipeFermentableDetail[];
   hops: RecipeHopDetail[];
   yeasts: RecipeYeastDetail[];
@@ -15,44 +16,47 @@ export interface RecipeDetailsResponse {
 }
 
 export interface RecipeFermentableDetail {
-  fermentableId: number;
   name: string;
-  type: string;
   amount: number;
+  type: string;
   supplier?: string;
   origin?: string;
-  color: number;
+  color?: number;
+  potential?: number;
 }
 
 export interface RecipeHopDetail {
-  hopId: number;
   name: string;
-  type: string;
   amount: number;
+  alpha?: number;
+  type: string;
   origin?: string;
-  alphaAcid: number;
-  harvestYear?: number;
+  use: string;
+  time?: number;
 }
 
 export interface RecipeYeastDetail {
-  yeastId: number;
   name: string;
+  amount: number;
+  laboratory?: string;
   type: string;
   form: string;
-  amount: number;
-  laboratory: string;
+  attenuation?: number;
+  unit?: string;
 }
 
 export interface RecipeMiscDetail {
-  miscId: number;
   name: string;
-  type: string;
-  unit: string;
   amount: number;
+  type: string;
+  unit?: string;
+  use?: string;
+  time?: number;
 }
 
 export interface CreateRecipeRequest {
   name: string;
+  style?: string;
   fermentables: CreateRecipeFermentableRequest[];
   hops: CreateRecipeHopRequest[];
   yeasts: CreateRecipeYeastRequest[];
@@ -60,23 +64,42 @@ export interface CreateRecipeRequest {
 }
 
 export interface CreateRecipeFermentableRequest {
-  fermentableId: number;
+  name: string;
   amount: number;
+  type: string;
+  supplier?: string;
+  origin?: string;
+  color?: number;
+  potential?: number;
 }
 
 export interface CreateRecipeHopRequest {
-  hopId: number;
+  name: string;
   amount: number;
+  alpha?: number;
+  type: string;
+  origin?: string;
+  use: string;
+  time?: number;
 }
 
 export interface CreateRecipeYeastRequest {
-  yeastId: number;
+  name: string;
   amount: number;
+  laboratory?: string;
+  type: string;
+  form: string;
+  attenuation?: number;
+  unit?: string;
 }
 
 export interface CreateRecipeMiscRequest {
-  miscId: number;
+  name: string;
   amount: number;
+  type: string;
+  unit?: string;
+  use?: string;
+  time?: number;
 }
 
 export interface SyncRecipeResponse {

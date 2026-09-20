@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.Json;
 using BrewInventory.Infrastructure.Brewfather.Models;
 using BrewInventory.Infrastructure.Brewfather.Settings;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace BrewInventory.Infrastructure.Brewfather;
@@ -12,30 +11,28 @@ namespace BrewInventory.Infrastructure.Brewfather;
 public class BrewfatherClient : IBrewfatherClient
 {
     private readonly HttpClient _httpClient;
-    private readonly BrewfatherSettings _settings;
-    private readonly ILogger<BrewfatherClient> _logger;
     private const int PageLimit = 50;
+
+    private readonly static JsonSerializerOptions jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
 
     public BrewfatherClient(
         HttpClient httpClient,
-        IOptions<BrewfatherSettings> settings,
-        ILogger<BrewfatherClient> logger)
+        IOptions<BrewfatherSettings> settings)
     {
+        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(settings);
+
         _httpClient = httpClient;
-        _settings = settings.Value;
-        _logger = logger;
 
-        var authString = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_settings.UserId}:{_settings.ApiKey}"));
+        var authString = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{settings.Value.UserId}:{settings.Value.ApiKey}"));
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authString);
-        _httpClient.BaseAddress = new Uri(_settings.BaseUrl);
+        _httpClient.BaseAddress = settings.Value.BaseUrl;
     }
 
-    public async Task<List<T>> GetAllInventoryItemsAsync<T>(string endpoint, CancellationToken cancellationToken = default)
-    {
-        return await GetAllItemsAsync<T>(endpoint, null, cancellationToken);
-    }
-
-    public async Task<List<T>> GetAllItemsAsync<T>(string endpoint, string? include = null, CancellationToken cancellationToken = default)
+    public async Task<ICollection<T>> GetAllItemsAsync<T>(string endpoint, string? include = null, CancellationToken cancellationToken = default)
     {
         var allItems = new List<T>();
         string? startAfter = null;
@@ -53,48 +50,38 @@ public class BrewfatherClient : IBrewfatherClient
                 url += $"&include={include}";
             }
 
-            try
+            var response = await _httpClient.GetAsync(new Uri(url, UriKind.Relative), cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            var items = JsonSerializer.Deserialize<List<T>>(content, jsonOptions);
+
+            if (items == null || items.Count == 0)
             {
-                var response = await _httpClient.GetAsync(url, cancellationToken);
-                response.EnsureSuccessStatusCode();
+                hasMore = false;
+            }
+            else
+            {
+                allItems.AddRange(items);
 
-                var content = await response.Content.ReadAsStringAsync(cancellationToken);
-                var items = JsonSerializer.Deserialize<List<T>>(content, new JsonSerializerOptions
+                if (items.Count == PageLimit)
                 {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (items == null || items.Count == 0)
-                {
-                    hasMore = false;
-                }
-                else
-                {
-                    allItems.AddRange(items);
-
-                    if (items.Count == PageLimit)
+                    var lastItem = items[^1];
+                    var idProperty = typeof(T).GetProperty("Id") ?? typeof(T).GetProperty("_id");
+                    if (idProperty != null)
                     {
-                        var lastItem = items[^1];
-                        var idProperty = typeof(T).GetProperty("_id");
-                        if (idProperty != null)
-                        {
-                            startAfter = idProperty.GetValue(lastItem)?.ToString();
-                        }
-                        else
-                        {
-                            hasMore = false;
-                        }
+                        startAfter = idProperty.GetValue(lastItem)?.ToString();
                     }
                     else
                     {
                         hasMore = false;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching data from Brewfather API: {Endpoint}", url);
-                throw;
+                else
+                {
+                    hasMore = false;
+                }
             }
         }
 
@@ -103,28 +90,17 @@ public class BrewfatherClient : IBrewfatherClient
 
     public async Task<string> CreateRecipeAsync(BrewfatherCreateRecipeRequest recipe, CancellationToken cancellationToken = default)
     {
-        try
+        var response = await _httpClient.PostAsJsonAsync("recipes", recipe, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        var result = JsonSerializer.Deserialize<BrewfatherCreateRecipeResponse>(content, jsonOptions);
+
+        if (result is null || string.IsNullOrWhiteSpace(result.Id))
         {
-            var response = await _httpClient.PostAsJsonAsync("recipes", recipe, cancellationToken);
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
-            var result = JsonSerializer.Deserialize<BrewfatherCreateRecipeResponse>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            if (result is null || string.IsNullOrWhiteSpace(result.Id))
-            {
-                throw new InvalidOperationException("Brewfather API did not return a recipe id.");
-            }
-
-            return result.Id;
+            throw new InvalidOperationException("Brewfather API did not return a recipe id.");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating recipe in Brewfather API: {Name}", recipe.name);
-            throw;
-        }
+
+        return result.Id;
     }
 }

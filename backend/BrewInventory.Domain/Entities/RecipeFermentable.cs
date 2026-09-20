@@ -1,3 +1,5 @@
+using BrewInventory.Domain.Entities.Enums;
+
 namespace BrewInventory.Domain.Entities;
 
 public class RecipeFermentable
@@ -6,8 +8,11 @@ public class RecipeFermentable
     public int RecipeId { get; set; }
     public Recipe Recipe { get; set; } = null!;
 
-    public int FermentableId { get; set; }
-    public Fermentable Fermentable { get; set; } = null!;
-
-    public decimal Amount { get; set; }
+    public string Name { get; set; } = null!;
+    public double Amount { get; set; }
+    public FermentableType Type { get; set; }
+    public string? Supplier { get; set; }
+    public string? Origin { get; set; }
+    public double? Color { get; set; }
+    public double? Potential { get; set; }
 }

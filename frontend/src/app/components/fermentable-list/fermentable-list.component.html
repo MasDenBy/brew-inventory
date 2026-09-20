@@ -18,12 +18,10 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Supplier</th>
           <th>Origin</th>
           <th>Type</th>
-          <th>Color (EBC)</th>
+          <th>Color</th>
           <th>Amount (kg)</th>
-          <th>Best Before</th>
           <th class="actions-column">Actions</th>
         </tr>
       </thead>
@@ -33,18 +31,20 @@
             <div class="name-cell">
               <span class="ingredient-icon">🌾</span>
               <strong>{{ fermentable.name }}</strong>
+              <span *ngIf="fermentable.supplier" class="supplier-subtext">{{ fermentable.supplier }}</span>
             </div>
           </td>
-          <td class="supplier-cell">{{ fermentable.supplier || '—' }}</td>
           <td class="supplier-cell">{{ fermentable.origin || '—' }}</td>
           <td class="type-cell">
             <span class="badge" [ngClass]="'badge-' + fermentable.type.toLowerCase()">{{ fermentable.type }}</span>
           </td>
-          <td class="amount-cell">{{ fermentable.color }}</td>
+          <td class="amount-cell">
+            <div>{{ fermentable.color }} EBC</div>
+            <div>{{ fermentable.lovibond }} L</div>
+          </td>
           <td class="amount-cell">
             <span class="amount-badge">{{ fermentable.amount }}</span>
           </td>
-          <td class="date-cell">{{ fermentable.bestBefore || '—' }}</td>
           <td class="actions-cell">
             <div class="action-buttons">
               <button class="btn-icon btn-edit" (click)="editFermentable(fermentable.id)" title="Edit">

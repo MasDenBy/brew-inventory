@@ -1,8 +1,7 @@
-using BrewInventory.App.Endpoints;
 using BrewInventory.Application.Contracts.Hops;
+using BrewInventory.Application.Repositories;
 using BrewInventory.Domain.Entities;
 using BrewInventory.Domain.Entities.Enums;
-using BrewInventory.Application.Repositories;
 
 namespace BrewInventory.App.Endpoints;
 
@@ -16,7 +15,7 @@ public static class HopEndpoints
         {
             var items = await repo.GetAllAsync(ct);
             var responses = items.Select(h => new HopResponse(
-                h.Id, h.Name, h.Amount, h.BestBefore, h.BrewfatherId,
+                h.Id, h.Name, h.Amount, h.BrewfatherId,
                 h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear)).ToList();
             return Results.Ok(responses);
         });
@@ -27,7 +26,7 @@ public static class HopEndpoints
             return h is null
                 ? Results.NotFound()
                 : Results.Ok(new HopResponse(
-                    h.Id, h.Name, h.Amount, h.BestBefore, h.BrewfatherId,
+                    h.Id, h.Name, h.Amount, h.BrewfatherId,
                     h.Origin, h.Type.ToString(), h.AlphaAcid, h.HarvestYear));
         });
 
@@ -37,7 +36,6 @@ public static class HopEndpoints
             {
                 Name = req.Name,
                 Amount = req.Amount,
-                BestBefore = req.BestBefore,
                 BrewfatherId = req.BrewfatherId,
                 Origin = req.Origin,
                 AlphaAcid = req.AlphaAcid,
@@ -47,7 +45,7 @@ public static class HopEndpoints
 
             await repo.AddAsync(entity, ct);
 
-            var resp = new HopResponse(entity.Id, entity.Name, entity.Amount, entity.BestBefore, entity.BrewfatherId, entity.Origin, entity.Type.ToString(), entity.AlphaAcid, entity.HarvestYear);
+            var resp = new HopResponse(entity.Id, entity.Name, entity.Amount, entity.BrewfatherId, entity.Origin, entity.Type.ToString(), entity.AlphaAcid, entity.HarvestYear);
             return Results.Created($"/api/hops/{entity.Id}", resp);
         });
 
@@ -58,7 +56,6 @@ public static class HopEndpoints
 
             entity.Name = req.Name;
             entity.Amount = req.Amount;
-            entity.BestBefore = req.BestBefore;
             entity.BrewfatherId = req.BrewfatherId;
             entity.Origin = req.Origin;
             entity.AlphaAcid = req.AlphaAcid;

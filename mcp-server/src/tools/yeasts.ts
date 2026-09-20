@@ -6,11 +6,12 @@ interface Yeast {
   id: number;
   name: string;
   amount: number;
-  bestBefore: string | null;
   brewfatherId: string | null;
   laboratory: string;
   type: string;
   form: string;
+  unit: string;
+  productId: string | null;
 }
 
 export function registerYeastTools(server: McpServer) {
@@ -29,7 +30,7 @@ export function registerYeastTools(server: McpServer) {
           : items
               .map(
                 (y) =>
-                  `- [#${y.id}] ${y.name} | Amount: ${y.amount} | Lab: ${y.laboratory} | Type: ${y.type} | Form: ${y.form}`,
+                  `- [#${y.id}] ${y.name} | Amount: ${y.amount} | Unit: ${y.unit || '-'} | Lab: ${y.laboratory} | Type: ${y.type} | Form: ${y.form} | ProductID: ${y.productId || '-'}`,
               )
               .join("\n");
       return { content: [{ type: "text", text }] };
@@ -46,10 +47,11 @@ export function registerYeastTools(server: McpServer) {
       const y = await api.get<Yeast>(`/api/yeasts/${id}`);
       const text = `[#${y.id}] ${y.name}
 Amount: ${y.amount}
+Unit: ${y.unit || '-'}
 Laboratory: ${y.laboratory}
 Type: ${y.type}
 Form: ${y.form}
-BestBefore: ${y.bestBefore || "-"}`;
+ProductID: ${y.productId || '-'}`;
       return { content: [{ type: "text", text }] };
     },
   );
@@ -65,7 +67,8 @@ BestBefore: ${y.bestBefore || "-"}`;
         laboratory: z.string().min(1),
         type: z.string().optional().nullable(),
         form: z.string().optional().nullable(),
-        bestBefore: z.string().optional().nullable(),
+        unit: z.string().optional().nullable(),
+        productId: z.string().optional().nullable(),
       }),
     },
     async (input) => {
@@ -75,7 +78,8 @@ BestBefore: ${y.bestBefore || "-"}`;
         laboratory: input.laboratory,
         type: input.type ?? null,
         form: input.form ?? null,
-        bestBefore: input.bestBefore ?? null,
+        unit: input.unit ?? '',
+        productId: input.productId ?? null,
         brewfatherId: null,
       });
       const text = `Created yeast [#${created.id}] ${created.name} (${created.laboratory}) with amount ${created.amount}.`;

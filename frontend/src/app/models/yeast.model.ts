@@ -22,6 +22,7 @@ export interface Yeast {
   type: YeastType;
   form: YeastForm;
   amount: number;
-  bestBefore: string | null;
   brewfatherId: string | null;
+  unit: string;
+  productId: string | null;
 }

@@ -12,38 +12,41 @@ interface RecipeDetails {
   id: number;
   name: string;
   brewfatherId: string | null;
+  style: string | null;
   fermentables: {
-    fermentableId: number;
     name: string;
-    type: string;
     amount: number;
+    type: string;
     supplier: string | null;
     origin: string | null;
-    color: number;
+    color: number | null;
+    potential: number | null;
   }[];
   hops: {
-    hopId: number;
     name: string;
-    type: string;
     amount: number;
+    alpha: number | null;
+    type: string;
     origin: string | null;
-    alphaAcid: number;
-    harvestYear: number | null;
+    use: string;
+    time: number | null;
   }[];
   yeasts: {
-    yeastId: number;
     name: string;
+    amount: number;
+    laboratory: string | null;
     type: string;
     form: string;
-    amount: number;
-    laboratory: string;
+    attenuation: number | null;
+    unit: string | null;
   }[];
   miscs: {
-    miscId: number;
     name: string;
-    type: string;
-    unit: string;
     amount: number;
+    type: string;
+    unit: string | null;
+    use: string | null;
+    time: number | null;
   }[];
 }
 
@@ -73,6 +76,10 @@ export function registerRecipeTools(server: McpServer) {
     async ({ id }) => {
       const r = await api.get<RecipeDetails>(`/api/recipes/${id}`);
       const lines = [`[#${r.id}] ${r.name}`];
+
+      if (r.style) {
+        lines.push(`Style: ${r.style}`);
+      }
 
       if (r.fermentables.length > 0) {
         lines.push("Fermentables:");
@@ -109,38 +116,58 @@ export function registerRecipeTools(server: McpServer) {
     "create_recipe",
     {
       description:
-        "Create a new recipe. Ingredients must reference existing inventory item IDs and amounts. Use list_fermentables/list_hops/list_yeasts/list_miscs to find valid IDs.",
+        "Create a new recipe with denormalized ingredient data.",
       inputSchema: z.object({
         name: z.string().min(1),
+        style: z.string().optional(),
         fermentables: z
           .array(
             z.object({
-              fermentableId: z.number().int().positive(),
+              name: z.string().min(1),
               amount: z.number().positive(),
+              type: z.string(),
+              supplier: z.string().optional(),
+              origin: z.string().optional(),
+              color: z.number().optional(),
+              potential: z.number().optional(),
             }),
           )
           .default([]),
         hops: z
           .array(
             z.object({
-              hopId: z.number().int().positive(),
+              name: z.string().min(1),
               amount: z.number().positive(),
+              alpha: z.number().optional(),
+              type: z.string(),
+              origin: z.string().optional(),
+              use: z.string(),
+              time: z.number().optional(),
             }),
           )
           .default([]),
         yeasts: z
           .array(
             z.object({
-              yeastId: z.number().int().positive(),
+              name: z.string().min(1),
               amount: z.number().positive(),
+              laboratory: z.string().optional(),
+              type: z.string(),
+              form: z.string(),
+              attenuation: z.number().optional(),
+              unit: z.string().optional(),
             }),
           )
           .default([]),
         miscs: z
           .array(
             z.object({
-              miscId: z.number().int().positive(),
+              name: z.string().min(1),
               amount: z.number().positive(),
+              type: z.string(),
+              unit: z.string().optional(),
+              use: z.string().optional(),
+              time: z.number().optional(),
             }),
           )
           .default([]),
@@ -149,6 +176,7 @@ export function registerRecipeTools(server: McpServer) {
     async (input) => {
       const created = await api.post<RecipeDetails>("/api/recipes", {
         name: input.name,
+        style: input.style,
         fermentables: input.fermentables,
         hops: input.hops,
         yeasts: input.yeasts,

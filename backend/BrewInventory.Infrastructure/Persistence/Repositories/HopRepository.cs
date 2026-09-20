@@ -13,7 +13,7 @@ public class HopRepository : IHopRepository
         _context = context;
     }
 
-    public async Task<List<Hop>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ICollection<Hop>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Hops.ToListAsync(cancellationToken);
     }

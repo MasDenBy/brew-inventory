@@ -5,154 +5,159 @@ namespace BrewInventory.Infrastructure.Brewfather.Mappers;
 
 public static class RecipeMapper
 {
-    public static Recipe ToEntity(
-        BrewfatherRecipe bfRecipe,
-        Dictionary<string, Fermentable> fermentableLookup,
-        Dictionary<string, Hop> hopLookup,
-        Dictionary<string, Yeast> yeastLookup,
-        Dictionary<string, Misc> miscLookup)
+    public static Recipe ToEntity(BrewfatherRecipe bfRecipe)
     {
         var recipe = new Recipe
         {
-            Name = bfRecipe.name,
-            BrewfatherId = bfRecipe._id
+            Name = bfRecipe.Name,
+            BrewfatherId = bfRecipe.Id,
+            Style = bfRecipe.Style?.Name
         };
 
-        if (bfRecipe.fermentables != null)
+        if (bfRecipe.Fermentables != null)
         {
-            foreach (var bfFermentable in bfRecipe.fermentables)
+            foreach (var bfFermentable in bfRecipe.Fermentables)
             {
-                if (fermentableLookup.TryGetValue(bfFermentable._id, out var fermentable))
+                recipe.RecipeFermentables.Add(new RecipeFermentable
                 {
-                    recipe.RecipeFermentables.Add(new RecipeFermentable
-                    {
-                        FermentableId = fermentable.Id,
-                        Amount = (decimal)bfFermentable.amount
-                    });
-                }
+                    Name = bfFermentable.Name,
+                    Amount = bfFermentable.Amount,
+                    Type = bfFermentable.Type,
+                    Supplier = bfFermentable.Supplier,
+                    Origin = bfFermentable.Origin,
+                    Color = bfFermentable.Color,
+                    Potential = bfFermentable.Potential
+                });
             }
         }
 
-        if (bfRecipe.hops != null)
+        if (bfRecipe.Hops != null)
         {
-            foreach (var bfHop in bfRecipe.hops)
+            foreach (var bfHop in bfRecipe.Hops)
             {
-                if (hopLookup.TryGetValue(bfHop._id, out var hop))
+                recipe.RecipeHops.Add(new RecipeHop
                 {
-                    recipe.RecipeHops.Add(new RecipeHop
-                    {
-                        HopId = hop.Id,
-                        Amount = (decimal)bfHop.amount
-                    });
-                }
+                    Name = bfHop.Name,
+                    Amount = bfHop.Amount,
+                    Alpha = bfHop.Alpha,
+                    Type = bfHop.Type,
+                    Origin = bfHop.Origin,
+                    Use = bfHop.Use,
+                    Time = bfHop.Time
+                });
             }
         }
 
-        if (bfRecipe.yeasts != null)
+        if (bfRecipe.Yeasts != null)
         {
-            foreach (var bfYeast in bfRecipe.yeasts)
+            foreach (var bfYeast in bfRecipe.Yeasts)
             {
-                if (yeastLookup.TryGetValue(bfYeast._id, out var yeast))
+                recipe.RecipeYeasts.Add(new RecipeYeast
                 {
-                    recipe.RecipeYeasts.Add(new RecipeYeast
-                    {
-                        YeastId = yeast.Id,
-                        Amount = (decimal)bfYeast.amount
-                    });
-                }
+                    Name = bfYeast.Name,
+                    Amount = bfYeast.Amount,
+                    Laboratory = bfYeast.Laboratory,
+                    Type = bfYeast.Type,
+                    Form = bfYeast.Form,
+                    Attenuation = bfYeast.Attenuation,
+                    Unit = bfYeast.Unit
+                });
             }
         }
 
-        if (bfRecipe.miscs != null)
+        if (bfRecipe.Miscs != null)
         {
-            foreach (var bfMisc in bfRecipe.miscs)
+            foreach (var bfMisc in bfRecipe.Miscs)
             {
-                if (miscLookup.TryGetValue(bfMisc._id, out var misc))
+                recipe.RecipeMiscs.Add(new RecipeMisc
                 {
-                    recipe.RecipeMiscs.Add(new RecipeMisc
-                    {
-                        MiscId = misc.Id,
-                        Amount = (decimal)bfMisc.amount
-                    });
-                }
+                    Name = bfMisc.Name,
+                    Amount = bfMisc.Amount,
+                    Type = bfMisc.Type,
+                    Unit = bfMisc.Unit,
+                    Use = bfMisc.Use,
+                    Time = bfMisc.Time
+                });
             }
         }
 
         return recipe;
     }
 
-    public static void UpdateEntity(
-        Recipe existingRecipe,
-        BrewfatherRecipe bfRecipe,
-        Dictionary<string, Fermentable> fermentableLookup,
-        Dictionary<string, Hop> hopLookup,
-        Dictionary<string, Yeast> yeastLookup,
-        Dictionary<string, Misc> miscLookup)
+    public static void UpdateEntity(Recipe existingRecipe, BrewfatherRecipe bfRecipe)
     {
-        existingRecipe.Name = bfRecipe.name;
+        existingRecipe.Name = bfRecipe.Name;
+        existingRecipe.Style = bfRecipe.Style?.Name;
 
         existingRecipe.RecipeFermentables.Clear();
         existingRecipe.RecipeHops.Clear();
         existingRecipe.RecipeYeasts.Clear();
         existingRecipe.RecipeMiscs.Clear();
 
-        if (bfRecipe.fermentables != null)
+        if (bfRecipe.Fermentables != null)
         {
-            foreach (var bfFermentable in bfRecipe.fermentables)
+            foreach (var bfFermentable in bfRecipe.Fermentables)
             {
-                if (fermentableLookup.TryGetValue(bfFermentable._id, out var fermentable))
+                existingRecipe.RecipeFermentables.Add(new RecipeFermentable
                 {
-                    existingRecipe.RecipeFermentables.Add(new RecipeFermentable
-                    {
-                        FermentableId = fermentable.Id,
-                        Amount = (decimal)bfFermentable.amount
-                    });
-                }
+                    Name = bfFermentable.Name,
+                    Amount = bfFermentable.Amount,
+                    Type = bfFermentable.Type,
+                    Supplier = bfFermentable.Supplier,
+                    Origin = bfFermentable.Origin,
+                    Color = bfFermentable.Color,
+                    Potential = bfFermentable.Potential
+                });
             }
         }
 
-        if (bfRecipe.hops != null)
+        if (bfRecipe.Hops != null)
         {
-            foreach (var bfHop in bfRecipe.hops)
+            foreach (var bfHop in bfRecipe.Hops)
             {
-                if (hopLookup.TryGetValue(bfHop._id, out var hop))
+                existingRecipe.RecipeHops.Add(new RecipeHop
                 {
-                    existingRecipe.RecipeHops.Add(new RecipeHop
-                    {
-                        HopId = hop.Id,
-                        Amount = (decimal)bfHop.amount
-                    });
-                }
+                    Name = bfHop.Name,
+                    Amount = bfHop.Amount,
+                    Alpha = bfHop.Alpha,
+                    Type = bfHop.Type,
+                    Origin = bfHop.Origin,
+                    Use = bfHop.Use,
+                    Time = bfHop.Time
+                });
             }
         }
 
-        if (bfRecipe.yeasts != null)
+        if (bfRecipe.Yeasts != null)
         {
-            foreach (var bfYeast in bfRecipe.yeasts)
+            foreach (var bfYeast in bfRecipe.Yeasts)
             {
-                if (yeastLookup.TryGetValue(bfYeast._id, out var yeast))
+                existingRecipe.RecipeYeasts.Add(new RecipeYeast
                 {
-                    existingRecipe.RecipeYeasts.Add(new RecipeYeast
-                    {
-                        YeastId = yeast.Id,
-                        Amount = (decimal)bfYeast.amount
-                    });
-                }
+                    Name = bfYeast.Name,
+                    Amount = bfYeast.Amount,
+                    Laboratory = bfYeast.Laboratory,
+                    Type = bfYeast.Type,
+                    Form = bfYeast.Form,
+                    Attenuation = bfYeast.Attenuation,
+                    Unit = bfYeast.Unit
+                });
             }
         }
 
-        if (bfRecipe.miscs != null)
+        if (bfRecipe.Miscs != null)
         {
-            foreach (var bfMisc in bfRecipe.miscs)
+            foreach (var bfMisc in bfRecipe.Miscs)
             {
-                if (miscLookup.TryGetValue(bfMisc._id, out var misc))
+                existingRecipe.RecipeMiscs.Add(new RecipeMisc
                 {
-                    existingRecipe.RecipeMiscs.Add(new RecipeMisc
-                    {
-                        MiscId = misc.Id,
-                        Amount = (decimal)bfMisc.amount
-                    });
-                }
+                    Name = bfMisc.Name,
+                    Amount = bfMisc.Amount,
+                    Type = bfMisc.Type,
+                    Unit = bfMisc.Unit,
+                    Use = bfMisc.Use,
+                    Time = bfMisc.Time
+                });
             }
         }
     }
@@ -162,84 +167,45 @@ public static class RecipeMapper
         return new BrewfatherCreateRecipeRequest(
             recipe.Name,
             "All Grain",
-            recipe.RecipeFermentables.Select(rf => new BrewfatherRecipeFermentable(
-                rf.Fermentable.BrewfatherId!,
-                (double)rf.Amount,
-                rf.Fermentable.Name,
-                FermentableMapper.ToBrewfatherType(rf.Fermentable.Type),
-                rf.Fermentable.Supplier,
-                rf.Fermentable.Origin,
-                rf.Fermentable.Color,
-                null
-            )).ToList(),
-            recipe.RecipeHops.Select(rh => new BrewfatherRecipeHop(
-                rh.Hop.BrewfatherId!,
-                (double)rh.Amount,
-                rh.Hop.Name,
-                rh.Hop.AlphaAcid,
-                HopMapper.ToBrewfatherType(rh.Hop.Type),
-                rh.Hop.Origin,
-                "Boil",
-                60
-            )).ToList(),
-            recipe.RecipeMiscs.Select(rm => new BrewfatherRecipeMisc(
-                rm.Misc.BrewfatherId!,
-                (double)rm.Amount,
-                rm.Misc.Name,
-                MiscMapper.ToBrewfatherType(rm.Misc.Type),
-                MiscMapper.ToBrewfatherUnit(rm.Misc.Unit),
-                "Boil",
-                0
-            )).ToList(),
-            recipe.RecipeYeasts.Select(ry => new BrewfatherRecipeYeast(
-                ry.Yeast.BrewfatherId!,
-                (double)ry.Amount,
-                ry.Yeast.Name,
-                string.IsNullOrWhiteSpace(ry.Yeast.Labaratory) ? null : ry.Yeast.Labaratory,
-                YeastMapper.ToBrewfatherType(ry.Yeast.Type),
-                YeastMapper.ToBrewfatherForm(ry.Yeast.Form),
-                null,
-                "pkg"
-            )).ToList()
+            recipe.RecipeFermentables.Select(rf => new BrewfatherRecipeFermentable
+            {
+                Amount = rf.Amount,
+                Name = rf.Name,
+                Type = rf.Type,
+                Supplier = rf.Supplier,
+                Origin = rf.Origin,
+                Color = rf.Color,
+                Potential = rf.Potential
+            }).ToList(),
+            recipe.RecipeHops.Select(rh => new BrewfatherRecipeHop
+            {
+                Amount = rh.Amount,
+                Name = rh.Name,
+                Alpha = rh.Alpha,
+                Type = rh.Type,
+                Origin = rh.Origin,
+                Use = rh.Use,
+                Time = rh.Time
+            }).ToList(),
+            recipe.RecipeMiscs.Select(rm => new BrewfatherRecipeMisc
+            {
+                Amount = rm.Amount,
+                Name = rm.Name,
+                Type = rm.Type,
+                Unit = rm.Unit,
+                Use = rm.Use,
+                Time = rm.Time
+            }).ToList(),
+            recipe.RecipeYeasts.Select(ry => new BrewfatherRecipeYeast
+            {
+                Amount = ry.Amount,
+                Name = ry.Name,
+                Laboratory = ry.Laboratory,
+                Type = ry.Type,
+                Form = ry.Form,
+                Attenuation = ry.Attenuation,
+                Unit = ry.Unit
+            }).ToList()
         );
-    }
-
-    public static ICollection<string> GetIngredientsWithoutBrewfatherId(Recipe recipe)
-    {
-        var missing = new List<string>();
-
-        foreach (var rf in recipe.RecipeFermentables)
-        {
-            if (string.IsNullOrWhiteSpace(rf.Fermentable.BrewfatherId))
-            {
-                missing.Add($"fermentable '{rf.Fermentable.Name}'");
-            }
-        }
-
-        foreach (var rh in recipe.RecipeHops)
-        {
-            if (string.IsNullOrWhiteSpace(rh.Hop.BrewfatherId))
-            {
-                missing.Add($"hop '{rh.Hop.Name}'");
-            }
-        }
-
-        foreach (var ry in recipe.RecipeYeasts)
-        {
-            if (string.IsNullOrWhiteSpace(ry.Yeast.BrewfatherId))
-            {
-                missing.Add($"yeast '{ry.Yeast.Name}'");
-            }
-        }
-
-        foreach (var rm in recipe.RecipeMiscs)
-        {
-            if (string.IsNullOrWhiteSpace(rm.Misc.BrewfatherId))
-            {
-                missing.Add($"misc '{rm.Misc.Name}'");
-            }
-        }
-
-        return missing;
     }
 }

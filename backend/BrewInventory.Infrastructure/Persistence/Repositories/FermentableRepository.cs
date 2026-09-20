@@ -13,7 +13,7 @@ public class FermentableRepository : IFermentableRepository
         _context = context;
     }
 
-    public async Task<List<Fermentable>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ICollection<Fermentable>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Fermentables.ToListAsync(cancellationToken);
     }

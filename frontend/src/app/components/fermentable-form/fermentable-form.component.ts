@@ -46,8 +46,10 @@ export class FermentableFormComponent implements OnInit {
       origin: [''],
       type: [FermentableType.Grain, Validators.required],
       color: [0, [Validators.required, Validators.min(0)]],
+      lovibond: [0, [Validators.min(0)]],
+      grainCategory: [''],
+      percentage: [null],
       amount: [0, [Validators.required, Validators.min(0)]],
-      bestBefore: [''],
       brewfatherId: ['']
     });
   }
@@ -61,8 +63,10 @@ export class FermentableFormComponent implements OnInit {
           origin: fermentable.origin || '',
           type: fermentable.type,
           color: fermentable.color,
+          lovibond: fermentable.lovibond,
+          grainCategory: fermentable.grainCategory || '',
+          percentage: fermentable.percentage,
           amount: fermentable.amount,
-          bestBefore: fermentable.bestBefore || '',
           brewfatherId: fermentable.brewfatherId || ''
         });
       },
@@ -86,8 +90,10 @@ export class FermentableFormComponent implements OnInit {
         origin: formValue.origin || null,
         type: formValue.type,
         color: formValue.color,
+        lovibond: formValue.lovibond || 0,
+        grainCategory: formValue.grainCategory || null,
+        percentage: formValue.percentage,
         amount: formValue.amount,
-        bestBefore: formValue.bestBefore || null,
         brewfatherId: formValue.brewfatherId || null
       };
 
