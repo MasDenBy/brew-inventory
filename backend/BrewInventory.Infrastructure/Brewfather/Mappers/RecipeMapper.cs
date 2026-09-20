@@ -7,163 +7,48 @@ public static class RecipeMapper
 {
     public static Recipe ToEntity(BrewfatherRecipe bfRecipe)
     {
+        ArgumentNullException.ThrowIfNull(bfRecipe);
+
         var recipe = new Recipe
         {
             Name = bfRecipe.Name,
             BrewfatherId = bfRecipe.Id,
-            Style = bfRecipe.Style?.Name
+            Style = bfRecipe.Style?.Name,
+            Notes = bfRecipe.Notes
         };
 
-        if (bfRecipe.Fermentables != null)
-        {
-            foreach (var bfFermentable in bfRecipe.Fermentables)
-            {
-                recipe.RecipeFermentables.Add(new RecipeFermentable
-                {
-                    Name = bfFermentable.Name,
-                    Amount = bfFermentable.Amount,
-                    Type = bfFermentable.Type,
-                    Supplier = bfFermentable.Supplier,
-                    Origin = bfFermentable.Origin,
-                    Color = bfFermentable.Color,
-                    Potential = bfFermentable.Potential
-                });
-            }
-        }
-
-        if (bfRecipe.Hops != null)
-        {
-            foreach (var bfHop in bfRecipe.Hops)
-            {
-                recipe.RecipeHops.Add(new RecipeHop
-                {
-                    Name = bfHop.Name,
-                    Amount = bfHop.Amount,
-                    Alpha = bfHop.Alpha,
-                    Type = bfHop.Type,
-                    Origin = bfHop.Origin,
-                    Use = bfHop.Use,
-                    Time = bfHop.Time
-                });
-            }
-        }
-
-        if (bfRecipe.Yeasts != null)
-        {
-            foreach (var bfYeast in bfRecipe.Yeasts)
-            {
-                recipe.RecipeYeasts.Add(new RecipeYeast
-                {
-                    Name = bfYeast.Name,
-                    Amount = bfYeast.Amount,
-                    Laboratory = bfYeast.Laboratory,
-                    Type = bfYeast.Type,
-                    Form = bfYeast.Form,
-                    Attenuation = bfYeast.Attenuation,
-                    Unit = bfYeast.Unit
-                });
-            }
-        }
-
-        if (bfRecipe.Miscs != null)
-        {
-            foreach (var bfMisc in bfRecipe.Miscs)
-            {
-                recipe.RecipeMiscs.Add(new RecipeMisc
-                {
-                    Name = bfMisc.Name,
-                    Amount = bfMisc.Amount,
-                    Type = bfMisc.Type,
-                    Unit = bfMisc.Unit,
-                    Use = bfMisc.Use,
-                    Time = bfMisc.Time
-                });
-            }
-        }
+        recipe.AddFermentables(ToEntities(bfRecipe.Fermentables, ToFermentableEntity));
+        recipe.AddHops(ToEntities(bfRecipe.Hops, ToHopEntity));
+        recipe.AddYeasts(ToEntities(bfRecipe.Yeasts, ToYeastEntity));
+        recipe.AddMiscs(ToEntities(bfRecipe.Miscs, ToMiscEntity));
 
         return recipe;
     }
 
     public static void UpdateEntity(Recipe existingRecipe, BrewfatherRecipe bfRecipe)
     {
+        ArgumentNullException.ThrowIfNull(existingRecipe);
+        ArgumentNullException.ThrowIfNull(bfRecipe);
+
         existingRecipe.Name = bfRecipe.Name;
         existingRecipe.Style = bfRecipe.Style?.Name;
+        existingRecipe.Notes = bfRecipe.Notes;
 
         existingRecipe.RecipeFermentables.Clear();
         existingRecipe.RecipeHops.Clear();
         existingRecipe.RecipeYeasts.Clear();
         existingRecipe.RecipeMiscs.Clear();
 
-        if (bfRecipe.Fermentables != null)
-        {
-            foreach (var bfFermentable in bfRecipe.Fermentables)
-            {
-                existingRecipe.RecipeFermentables.Add(new RecipeFermentable
-                {
-                    Name = bfFermentable.Name,
-                    Amount = bfFermentable.Amount,
-                    Type = bfFermentable.Type,
-                    Supplier = bfFermentable.Supplier,
-                    Origin = bfFermentable.Origin,
-                    Color = bfFermentable.Color,
-                    Potential = bfFermentable.Potential
-                });
-            }
-        }
-
-        if (bfRecipe.Hops != null)
-        {
-            foreach (var bfHop in bfRecipe.Hops)
-            {
-                existingRecipe.RecipeHops.Add(new RecipeHop
-                {
-                    Name = bfHop.Name,
-                    Amount = bfHop.Amount,
-                    Alpha = bfHop.Alpha,
-                    Type = bfHop.Type,
-                    Origin = bfHop.Origin,
-                    Use = bfHop.Use,
-                    Time = bfHop.Time
-                });
-            }
-        }
-
-        if (bfRecipe.Yeasts != null)
-        {
-            foreach (var bfYeast in bfRecipe.Yeasts)
-            {
-                existingRecipe.RecipeYeasts.Add(new RecipeYeast
-                {
-                    Name = bfYeast.Name,
-                    Amount = bfYeast.Amount,
-                    Laboratory = bfYeast.Laboratory,
-                    Type = bfYeast.Type,
-                    Form = bfYeast.Form,
-                    Attenuation = bfYeast.Attenuation,
-                    Unit = bfYeast.Unit
-                });
-            }
-        }
-
-        if (bfRecipe.Miscs != null)
-        {
-            foreach (var bfMisc in bfRecipe.Miscs)
-            {
-                existingRecipe.RecipeMiscs.Add(new RecipeMisc
-                {
-                    Name = bfMisc.Name,
-                    Amount = bfMisc.Amount,
-                    Type = bfMisc.Type,
-                    Unit = bfMisc.Unit,
-                    Use = bfMisc.Use,
-                    Time = bfMisc.Time
-                });
-            }
-        }
+        existingRecipe.AddFermentables(ToEntities(bfRecipe.Fermentables, ToFermentableEntity));
+        existingRecipe.AddHops(ToEntities(bfRecipe.Hops, ToHopEntity));
+        existingRecipe.AddYeasts(ToEntities(bfRecipe.Yeasts, ToYeastEntity));
+        existingRecipe.AddMiscs(ToEntities(bfRecipe.Miscs, ToMiscEntity));
     }
 
     public static BrewfatherCreateRecipeRequest ToBrewfatherRequest(Recipe recipe)
     {
+        ArgumentNullException.ThrowIfNull(recipe);
+
         return new BrewfatherCreateRecipeRequest(
             recipe.Name,
             "All Grain",
@@ -175,7 +60,7 @@ public static class RecipeMapper
                 Supplier = rf.Supplier,
                 Origin = rf.Origin,
                 Color = rf.Color,
-                Potential = rf.Potential
+                Potential = rf.Potential,
             }).ToList(),
             recipe.RecipeHops.Select(rh => new BrewfatherRecipeHop
             {
@@ -185,7 +70,7 @@ public static class RecipeMapper
                 Type = rh.Type,
                 Origin = rh.Origin,
                 Use = rh.Use,
-                Time = rh.Time
+                Time = rh.Time,
             }).ToList(),
             recipe.RecipeMiscs.Select(rm => new BrewfatherRecipeMisc
             {
@@ -194,7 +79,7 @@ public static class RecipeMapper
                 Type = rm.Type,
                 Unit = rm.Unit,
                 Use = rm.Use,
-                Time = rm.Time
+                Time = rm.Time,
             }).ToList(),
             recipe.RecipeYeasts.Select(ry => new BrewfatherRecipeYeast
             {
@@ -204,8 +89,57 @@ public static class RecipeMapper
                 Type = ry.Type,
                 Form = ry.Form,
                 Attenuation = ry.Attenuation,
-                Unit = ry.Unit
-            }).ToList()
+                Unit = ry.Unit,
+            }).ToList(),
+            recipe.Notes
         );
     }
+
+    private static List<T> ToEntities<T, TSource>(IEnumerable<TSource>? source, Func<TSource, T> mapper)
+    {
+        return source?.Select(mapper).ToList() ?? [];
+    }
+
+    private static RecipeFermentable ToFermentableEntity(BrewfatherRecipeFermentable bf) => new()
+    {
+        Name = bf.Name,
+        Amount = bf.Amount,
+        Type = bf.Type,
+        Supplier = bf.Supplier,
+        Origin = bf.Origin,
+        Color = bf.Color,
+        Potential = bf.Potential,
+    };
+
+    private static RecipeHop ToHopEntity(BrewfatherRecipeHop bf) => new()
+    {
+        Name = bf.Name,
+        Amount = bf.Amount,
+        Alpha = bf.Alpha,
+        Type = bf.Type,
+        Origin = bf.Origin,
+        Use = bf.Use,
+        Time = bf.Time,
+    };
+
+    private static RecipeYeast ToYeastEntity(BrewfatherRecipeYeast bf) => new()
+    {
+        Name = bf.Name,
+        Amount = bf.Amount,
+        Laboratory = bf.Laboratory,
+        Type = bf.Type,
+        Form = bf.Form,
+        Attenuation = bf.Attenuation,
+        Unit = bf.Unit,
+    };
+
+    private static RecipeMisc ToMiscEntity(BrewfatherRecipeMisc bf) => new()
+    {
+        Name = bf.Name,
+        Amount = bf.Amount,
+        Type = bf.Type,
+        Unit = bf.Unit,
+        Use = bf.Use,
+        Time = bf.Time,
+    };
 }

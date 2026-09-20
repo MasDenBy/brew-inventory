@@ -13,6 +13,7 @@ interface RecipeDetails {
   name: string;
   brewfatherId: string | null;
   style: string | null;
+  notes: string | null;
   fermentables: {
     name: string;
     amount: number;
@@ -81,6 +82,10 @@ export function registerRecipeTools(server: McpServer) {
         lines.push(`Style: ${r.style}`);
       }
 
+      if (r.notes) {
+        lines.push(`Notes: ${r.notes}`);
+      }
+
       if (r.fermentables.length > 0) {
         lines.push("Fermentables:");
         lines.push(
@@ -120,6 +125,7 @@ export function registerRecipeTools(server: McpServer) {
       inputSchema: z.object({
         name: z.string().min(1),
         style: z.string().optional(),
+        notes: z.string().optional(),
         fermentables: z
           .array(
             z.object({
@@ -177,6 +183,7 @@ export function registerRecipeTools(server: McpServer) {
       const created = await api.post<RecipeDetails>("/api/recipes", {
         name: input.name,
         style: input.style,
+        notes: input.notes,
         fermentables: input.fermentables,
         hops: input.hops,
         yeasts: input.yeasts,

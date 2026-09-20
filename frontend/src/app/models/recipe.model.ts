@@ -9,6 +9,7 @@ export interface RecipeDetailsResponse {
   name: string;
   brewfatherId?: string;
   style?: string;
+  notes?: string;
   fermentables: RecipeFermentableDetail[];
   hops: RecipeHopDetail[];
   yeasts: RecipeYeastDetail[];
@@ -57,6 +58,7 @@ export interface RecipeMiscDetail {
 export interface CreateRecipeRequest {
   name: string;
   style?: string;
+  notes?: string;
   fermentables: CreateRecipeFermentableRequest[];
   hops: CreateRecipeHopRequest[];
   yeasts: CreateRecipeYeastRequest[];
