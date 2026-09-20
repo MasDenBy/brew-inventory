@@ -142,6 +142,15 @@ internal static class RecipeEndpoints
             return Results.Created($"/api/recipes/{recipe.Id}", details);
         });
 
+        group.MapDelete("/{id:int}", async (int id, IRecipeRepository repo, CancellationToken ct) =>
+        {
+            var recipe = await repo.GetByIdAsync(id, ct);
+            if (recipe is null) return Results.NotFound();
+
+            await repo.DeleteAsync(recipe, ct);
+            return Results.NoContent();
+        });
+
         group.MapPost("/{id:int}/sync", async (int id, IBrewfatherSyncService syncService, CancellationToken ct) =>
         {
             try

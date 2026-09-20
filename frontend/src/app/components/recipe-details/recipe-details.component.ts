@@ -72,4 +72,20 @@ export class RecipeDetailsComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/recipes']);
   }
+
+  deleteRecipe(): void {
+    if (!this.recipe) return;
+
+    if (confirm('Are you sure you want to delete this recipe?')) {
+      this.recipeService.deleteRecipe(this.recipe.id).subscribe({
+        next: () => {
+          this.router.navigate(['/recipes']);
+        },
+        error: (err) => {
+          this.error = 'Failed to delete recipe';
+          console.error('Error deleting recipe:', err);
+        }
+      });
+    }
+  }
 }

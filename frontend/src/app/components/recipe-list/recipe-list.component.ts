@@ -44,4 +44,18 @@ export class RecipeListComponent implements OnInit {
   viewRecipe(id: number): void {
     this.router.navigate(['/recipes', id]);
   }
+
+  deleteRecipe(id: number): void {
+    if (confirm('Are you sure you want to delete this recipe?')) {
+      this.recipeService.deleteRecipe(id).subscribe({
+        next: () => {
+          this.loadRecipes();
+        },
+        error: (err) => {
+          this.error = 'Failed to delete recipe';
+          console.error('Error deleting recipe:', err);
+        }
+      });
+    }
+  }
 }
