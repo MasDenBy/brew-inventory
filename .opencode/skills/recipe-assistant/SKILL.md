@@ -86,6 +86,8 @@ brew_inventory_create_recipe
 
 Pass the confirmed matches using each inventory item's numeric ID (from the list tool output) and amounts from the recipe (not inventory amounts):
 
+- `name`: recipe name from the screenshot
+- `notes`: the full raw OCR text of the recipe (preserve original formatting)
 - `fermentables[]`: `{ fermentableId, amount }`
 - `hops[]`: `{ hopId, amount }`
 - `yeasts[]`: `{ yeastId, amount }`
