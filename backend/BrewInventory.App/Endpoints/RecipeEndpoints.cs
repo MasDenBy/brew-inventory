@@ -23,50 +23,7 @@ internal static class RecipeEndpoints
             var recipe = await repo.GetByIdAsync(id, ct);
             if (recipe is null) return Results.NotFound();
 
-            var response = new RecipeDetailsResponse(
-                recipe.Id,
-                recipe.Name,
-                recipe.BrewfatherId,
-                recipe.Style,
-                recipe.Notes,
-                recipe.RecipeFermentables.Select(rf => new RecipeFermentableDetail(
-                    rf.Name,
-                    rf.Amount,
-                    rf.Type.ToString(),
-                    rf.Supplier,
-                    rf.Origin,
-                    rf.Color,
-                    rf.Potential
-                )).ToList(),
-                recipe.RecipeHops.Select(rh => new RecipeHopDetail(
-                    rh.Name,
-                    rh.Amount,
-                    rh.Alpha,
-                    rh.Type.ToString(),
-                    rh.Origin,
-                    rh.Use.ToString(),
-                    rh.Time
-                )).ToList(),
-                recipe.RecipeYeasts.Select(ry => new RecipeYeastDetail(
-                    ry.Name,
-                    ry.Amount,
-                    ry.Laboratory,
-                    ry.Type.ToString(),
-                    ry.Form.ToString(),
-                    ry.Attenuation,
-                    ry.Unit
-                )).ToList(),
-                recipe.RecipeMiscs.Select(rm => new RecipeMiscDetail(
-                    rm.Name,
-                    rm.Amount,
-                    rm.Type.ToString(),
-                    rm.Unit,
-                    rm.Use,
-                    rm.Time
-                )).ToList()
-            );
-
-            return Results.Ok(response);
+            return Results.Ok(ToResponse(recipe));
         });
 
         group.MapPost("/", async (CreateRecipeRequest req, IRecipeRepository repo, CancellationToken ct) =>
@@ -141,7 +98,9 @@ internal static class RecipeEndpoints
             await repo.AddAsync(recipe, ct);
 
             var details = await repo.GetByIdAsync(recipe.Id, ct);
-            return Results.Created($"/api/recipes/{recipe.Id}", details);
+            if (details is null) return Results.StatusCode(500);
+
+            return Results.Created($"/api/recipes/{details.Id}", ToResponse(details));
         });
 
         group.MapDelete("/{id:int}", async (int id, IRecipeRepository repo, CancellationToken ct) =>
@@ -170,4 +129,47 @@ internal static class RecipeEndpoints
             }
         });
     }
+
+    private static RecipeDetailsResponse ToResponse(Recipe recipe) => new(
+        recipe.Id,
+        recipe.Name,
+        recipe.BrewfatherId,
+        recipe.Style,
+        recipe.Notes,
+        recipe.RecipeFermentables.Select(rf => new RecipeFermentableDetail(
+            rf.Name,
+            rf.Amount,
+            rf.Type.ToString(),
+            rf.Supplier,
+            rf.Origin,
+            rf.Color,
+            rf.Potential
+        )).ToList(),
+        recipe.RecipeHops.Select(rh => new RecipeHopDetail(
+            rh.Name,
+            rh.Amount,
+            rh.Alpha,
+            rh.Type.ToString(),
+            rh.Origin,
+            rh.Use.ToString(),
+            rh.Time
+        )).ToList(),
+        recipe.RecipeYeasts.Select(ry => new RecipeYeastDetail(
+            ry.Name,
+            ry.Amount,
+            ry.Laboratory,
+            ry.Type.ToString(),
+            ry.Form.ToString(),
+            ry.Attenuation,
+            ry.Unit
+        )).ToList(),
+        recipe.RecipeMiscs.Select(rm => new RecipeMiscDetail(
+            rm.Name,
+            rm.Amount,
+            rm.Type.ToString(),
+            rm.Unit,
+            rm.Use,
+            rm.Time
+        )).ToList()
+    );
 }

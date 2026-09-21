@@ -6,10 +6,16 @@ using BrewInventory.Infrastructure.Services;
 using BrewInventory.Application.Repositories;
 using BrewInventory.Application.Services;
 using BrewInventory.App.Endpoints;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
 builder.Services.AddDbContext<BrewInventoryContext>();
 
